@@ -43,8 +43,29 @@ public class Board extends Parent {
                         Cell cell = getCell(x, i);
                         cell.ship = ship;
                         if (!enemy) {
-                            cell.setFill(Color.LIGHTGREEN);
-                            cell.setStroke(Color.GREEN);
+                            switch (ship.shipType) {
+                                case "Carrier":
+                                    cell.setFill(Color.LIGHTBLUE);
+                                    cell.setStroke(Color.BLUE);
+                                    break;
+                                case "Battleship":
+                                    cell.setFill(Color.LIGHTCORAL);
+                                    cell.setStroke(Color.RED);
+                                    break;
+                                case "Cruiser":
+                                    cell.setFill(Color.GOLD);
+                                    cell.setStroke(Color.ORANGE);
+                                    break;
+                                case "Submarine":
+                                    cell.setFill(Color.SANDYBROWN);
+                                    cell.setStroke(Color.BROWN);
+                                    break;
+                                default:
+                                    cell.setFill(Color.LIGHTGREEN);
+                                    cell.setStroke(Color.GREEN);
+                                    break;
+                            }
+
                         }
                     }
                 } else {
@@ -52,8 +73,28 @@ public class Board extends Parent {
                         Cell cell = getCell(i, y);
                         cell.ship = ship;
                         if (!enemy) {
-                            cell.setFill(Color.LIGHTGREEN);
-                            cell.setStroke(Color.GREEN);
+                            switch (ship.shipType) {
+                                case "Carrier":
+                                    cell.setFill(Color.LIGHTBLUE);
+                                    cell.setStroke(Color.BLUE);
+                                    break;
+                                case "Battleship":
+                                    cell.setFill(Color.LIGHTCORAL);
+                                    cell.setStroke(Color.RED);
+                                    break;
+                                case "Cruiser":
+                                    cell.setFill(Color.GOLD);
+                                    cell.setStroke(Color.ORANGE);
+                                    break;
+                                case "Submarine":
+                                    cell.setFill(Color.SANDYBROWN);
+                                    cell.setStroke(Color.BROWN);
+                                    break;
+                                default:
+                                    cell.setFill(Color.LIGHTGREEN);
+                                    cell.setStroke(Color.GREEN);
+                                    break;
+                            }
                         }
                     }
                 }

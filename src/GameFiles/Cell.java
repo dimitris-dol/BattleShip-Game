@@ -9,7 +9,7 @@ public class Cell extends Rectangle {
     Ship ship = null;
     public boolean wasShot = false;
     public int highscore=0;
-
+    public int perc=0;
     private Board board;
 
     Cell(int x, int y, Board board) {
@@ -27,9 +27,11 @@ public class Cell extends Rectangle {
 
         if (ship != null) {
             ship.hit();
+            perc =+1;
             highscore =+ship.hitScore;
             setFill(Color.RED);
             if (!ship.isAlive()) {
+                highscore= highscore+ ship.SinkBonus;
                 board.ships--;
             }
             return true;

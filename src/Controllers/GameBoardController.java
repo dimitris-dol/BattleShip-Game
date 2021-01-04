@@ -4,7 +4,6 @@ import GameFiles.Board;
 import GameFiles.Cell;
 import Models.*;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -16,7 +15,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
 import java.util.Random;
 
 
@@ -41,6 +39,13 @@ public class GameBoardController {
     private int enemyScore=0;
     private int myScore=0;
 
+    private int myShots=0;
+    private int enemyShots=0;
+
+    private int myKill=0;
+    private int enKill=0;
+    private float myPerc =0;
+    private float enPerc =0;
 
 
     // FIRST TURN BOOLEAN  //
@@ -96,64 +101,34 @@ public class GameBoardController {
 
         // SET TOOLBAR FIELDS //
 
-        Button txt1 = new Button(" Player Ships");
-        TextField txt2 = new TextField();
-        Button txt3 = new Button(" Enemy Ships");
-        TextField txt4 = new TextField();
-        Button txt5 = new Button(" Player Points");
-        TextField txt6 = new TextField();
-        Button txt7 = new Button(" Enemy Points");
-        TextField txt8 = new TextField();
-        Button txt9 = new Button("Show Player %");
-        TextField txt10 = new TextField();
-        Button txt11 = new Button("Show Enemy %");
-        TextField txt12 = new TextField();
+        Text txt1 = new Text("Player Ships");
+        TextField txt2 = new TextField("N/A");
+        Text txt3 = new Text("Enemy Ships");
+        TextField txt4 = new TextField("N/A");
+        Text txt5 = new Text("Player Points");
+        TextField txt6 = new TextField("N/A");
+        Text txt7 = new Text("Enemy Points");
+        TextField txt8 = new TextField("N/A");
+        Text txt9 = new Text("Player Accuracy");
+        TextField txt10 = new TextField("N/A");
+        Text txt11 = new Text("Enemy Accuracy");
+        TextField txt12 = new TextField("N/A");
 
-        txt2.setText("N/A");
         txt2.setDisable(true);
         txt2.setStyle("-fx-opacity: 1;" + "-fx-max-width: 120");
-        txt4.setText("N/A");
         txt4.setDisable(true);
         txt4.setStyle("-fx-opacity: 1;"  + "-fx-max-width: 120");
-        txt6.setText("N/A");
         txt6.setDisable(true);
         txt6.setStyle("-fx-opacity: 1;"  + "-fx-max-width: 120");
-        txt8.setText("N/A");
         txt8.setDisable(true);
         txt8.setStyle("-fx-opacity: 1;"  + "-fx-max-width: 120");
-        txt10.setText("N/A");
         txt10.setDisable(true);
         txt10.setStyle("-fx-opacity: 1;"  + "-fx-max-width: 120");
-        txt12.setText("N/A");
         txt12.setDisable(true);
         txt12.setStyle("-fx-opacity: 1;"  + "-fx-max-width: 120");
 
         Separator separator = new Separator();
         Separator separator2 = new Separator();
-
-        // BUTTON FUNCTIONALITY //
-
-        // first button
-        EventHandler<ActionEvent> plships = plships1 -> txt2.setText(String.valueOf(playerBoard.ships));
-
-        txt1.setOnAction(plships);
-
-        // second button
-        EventHandler<ActionEvent> enships = enships1 -> txt4.setText(String.valueOf(enemyBoard.ships));
-
-        txt3.setOnAction(enships);
-
-        // third button
-        EventHandler<ActionEvent> plscore = plscore1 -> txt6.setText(String.valueOf(myScore));
-
-        txt5.setOnAction(plscore);
-
-        // fourth button
-        EventHandler<ActionEvent> enscore = enscore1 -> txt8.setText(String.valueOf(enemyScore));
-
-        txt7.setOnAction(enscore);
-
-
 
         // POPULATE TOOLBAR //
 
@@ -161,14 +136,19 @@ public class GameBoardController {
 
         // RIGHT SIDE //
 
-        Text TotalShips = new Text("Your fleet:");
+        Text TotalShips = new Text("Your fleet to be placed in this order:");
         TotalShips.setStyle("-fx-font-weight: bold");
 
         Text carrierTotal = new Text("Carriers available:");
+        carrierTotal.setStyle("-fx-stroke: blue");
         Text battleshipTotal = new Text("Battleships available:");
+        battleshipTotal.setStyle("-fx-stroke: red");
         Text cruiserTotal = new Text("Cruisers available:");
+        cruiserTotal.setStyle("-fx-stroke: orange");
         Text submarineTotal = new Text("Submarines available:");
+        submarineTotal.setStyle("-fx-stroke: brown");
         Text destroyerTotal = new Text("Destroyers available:");
+        destroyerTotal.setStyle("-fx-stroke: green");
         TextField carrier = new TextField("1");
         carrier.setDisable(true);
         carrier.setStyle("-fx-opacity: 1;");
@@ -185,9 +165,31 @@ public class GameBoardController {
         destroyer.setDisable(true);
         destroyer.setStyle("-fx-opacity: 1;");
         Text play = new Text("");
+        Text howToPlay = new Text("How to play:");
+        howToPlay.setStyle("-fx-font-weight: bold");
 
-        VBox rightvbox = new VBox(10,TotalShips,carrierTotal, carrier, battleshipTotal, battleship, cruiserTotal, cruiser, submarineTotal, submarine, destroyerTotal, destroyer, play);
-        rightvbox.setAlignment(Pos.BASELINE_LEFT);
+        Text gameInstructions = new Text("The ships above consist of your entire fleet. To place them on your board you can click with either left click or right click." +
+                                     " If you left click a cell, the ship in queue will be placed vertically starting from that cell. If you right click instead, the ship will be placed horizontally. "  +
+                                     " The ships are chosen in the order above.");
+        gameInstructions.setStyle("-fx-text-alignment: justify");
+        gameInstructions.setWrappingWidth(200);
+        Text plTurns = new Text("Player Turns Remaining");
+        Text enTurns = new Text("Enemy Turns Remaining");
+        TextField txt13 = new TextField("40");
+        TextField txt14 = new TextField("40");
+        txt13.setDisable(true);
+        txt13.setStyle("-fx-opacity: 1;");
+        txt14.setDisable(true);
+        txt14.setStyle("-fx-opacity: 1;");
+
+        plTurns.setStyle("-fx-font-weight: bold");
+        enTurns.setStyle("-fx-font-weight: bold");
+
+        // POPULATE RIGHT SIDE VBOX //
+
+        VBox rightvbox = new VBox(10,TotalShips,carrierTotal, carrier, battleshipTotal, battleship, cruiserTotal, cruiser, submarineTotal, submarine, destroyerTotal,
+                destroyer, play, howToPlay, gameInstructions, plTurns, txt13, enTurns, txt14);
+        rightvbox.setAlignment(Pos.TOP_CENTER);
         rightvbox.setStyle("-fx-padding: 16;" + "-fx-border-color: black;");
         root.setRight(rightvbox);
 
@@ -207,16 +209,23 @@ public class GameBoardController {
             }
 
             enemyTurn = !cell.shoot();
+            myShots= myShots+1;
             myScore= myScore + cell.highscore;
+            myKill=myKill+cell.perc;
+            myPerc =(float) (((myKill)*100) / myShots);
+            txt4.setText(String.valueOf(enemyBoard.ships));
+            txt6.setText(String.valueOf(myScore));
+            txt10.setText(String.valueOf(myPerc));
+            txt13.setText(String.valueOf(40-myShots));
 
-            if (enemyBoard.ships == 0) {
+            if (enemyBoard.ships == 0 ||  ((myShots==40 || enemyShots==40) && myScore>enemyScore )) {
                 System.out.println("YOU WIN");
                 infoBox("You won!", "What a victory!");
                 running = false;
             }
 
             if (enemyTurn)
-                enemyMove();
+                enemyMove(txt2,txt8,txt14, txt12);
         });
 
         // PLAYER BOARD //
@@ -258,7 +267,7 @@ public class GameBoardController {
                 }
                 if (shipsPlaced == 5) {
                     play.setText("All set! Fire at Will!");
-                    startGame();
+                    startGame(txt2,txt8,txt14,txt12);
                 }
 
         });
@@ -268,7 +277,9 @@ public class GameBoardController {
         Text txtME= new Text();
         Text txtENEMY = new Text();
         txtME.setText("My Board");
+        txtME.setStyle("-fx-font-weight: bold");
         txtENEMY.setText("Enemy Board");
+        txtENEMY.setStyle("-fx-font-weight: bold");
 
         VBox vbox = new VBox(40,txtENEMY, enemyBoard, txtME ,playerBoard);
         vbox.setAlignment(Pos.CENTER);
@@ -280,7 +291,7 @@ public class GameBoardController {
 
     // ENEMY PLAYSTYLE //
 
-    private void enemyMove() {
+    private void enemyMove(TextField shipText, TextField scoreText, TextField shotsText, TextField percText) {
         while (enemyTurn) {
             int x = random.nextInt(10);
             int y = random.nextInt(10);
@@ -292,9 +303,16 @@ public class GameBoardController {
 
             enemyTurn = cell.shoot();
             enemyScore=enemyScore + cell.highscore;
+            enemyShots= enemyShots+1;
+            enKill=enKill+cell.perc;
+            enPerc =(float) (((enKill)*100) / enemyShots);
+            scoreText.setText(String.valueOf(enemyScore));
+            shotsText.setText(String.valueOf(40-enemyShots));
+            shipText.setText(String.valueOf(playerBoard.ships));
+            percText.setText(String.valueOf(enPerc));
 
 
-            if (playerBoard.ships == 0) {
+            if (playerBoard.ships == 0 ||  ((myShots==40 || enemyShots==40) && myScore<enemyScore )) {
                 System.out.println("YOU LOSE");
                 infoBox("You lost!", "Bad Luck!");
                 running = false;
@@ -304,7 +322,7 @@ public class GameBoardController {
 
     // PLACE ENEMY SHIPS. THEN GAME STARTS //
 
-    private void startGame() {
+    private void startGame(TextField shipText,TextField scoreText, TextField shotsText, TextField percText) {
         // place enemy ships
         int count = 0;
 
@@ -319,9 +337,10 @@ public class GameBoardController {
 
         if (enemyTurn()) {
             infoBox("You go second!", "Unlucky, sir!");
-            enemyMove();
+            enemyMove(shipText,scoreText,shotsText, percText);
         }
         else {
+           // enemyShots=1;
             infoBox("You go first!", "We got the upper hand!");
         }
 
