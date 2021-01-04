@@ -12,7 +12,8 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception{
         Parent root = FXMLLoader.load(getClass().getResource("../views/Start.fxml"));
         primaryStage.setTitle("MediaLab Battleship");
-        primaryStage.setScene(new Scene(root, 1280, 720));
+        primaryStage.centerOnScreen();
+        primaryStage.setScene(new Scene(root, 1500, 1000));
         primaryStage.setResizable(false);
         primaryStage.show();
     }

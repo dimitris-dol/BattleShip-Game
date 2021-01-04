@@ -5,14 +5,16 @@ import GameFiles.Cell;
 import Models.*;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import java.util.Random;
@@ -90,8 +92,16 @@ public class GameBoardController {
 
         // MAIN WINDOW //
 
+
+        Image imageb = new Image("https://cdn.offshorewind.biz/wp-content/uploads/sites/10/2020/10/09125736/AU200055055.jpg");
+        BackgroundSize bSize = new BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, false, false, true, false);
+
         BorderPane root = new BorderPane();
-        root.setPrefSize(1520, 920);
+        root.setPrefSize(1500, 1000);
+
+        root.setBackground(new Background(new BackgroundImage(imageb, BackgroundRepeat.NO_REPEAT,
+                BackgroundRepeat.NO_REPEAT,
+                BackgroundPosition.CENTER,bSize)));
 
         // TOP TOOLBAR //
 
@@ -140,15 +150,15 @@ public class GameBoardController {
         TotalShips.setStyle("-fx-font-weight: bold");
 
         Text carrierTotal = new Text("Carriers available:");
-        carrierTotal.setStyle("-fx-stroke: blue");
+        carrierTotal.setStyle("-fx-stroke: blue;" + "-fx-font-size: 16");
         Text battleshipTotal = new Text("Battleships available:");
-        battleshipTotal.setStyle("-fx-stroke: red");
+        battleshipTotal.setStyle("-fx-stroke: red;" + "-fx-font-size: 16");
         Text cruiserTotal = new Text("Cruisers available:");
-        cruiserTotal.setStyle("-fx-stroke: orange");
+        cruiserTotal.setStyle("-fx-stroke: orange;" + "-fx-font-size: 16");
         Text submarineTotal = new Text("Submarines available:");
-        submarineTotal.setStyle("-fx-stroke: brown");
+        submarineTotal.setStyle("-fx-stroke: brown;" + "-fx-font-size: 16");
         Text destroyerTotal = new Text("Destroyers available:");
-        destroyerTotal.setStyle("-fx-stroke: green");
+        destroyerTotal.setStyle("-fx-stroke: green;" + "-fx-font-size: 16");
         TextField carrier = new TextField("1");
         carrier.setDisable(true);
         carrier.setStyle("-fx-opacity: 1;");
@@ -166,14 +176,14 @@ public class GameBoardController {
         destroyer.setStyle("-fx-opacity: 1;");
         Text play = new Text("");
         Text howToPlay = new Text("How to play:");
-        howToPlay.setStyle("-fx-font-weight: bold");
+        howToPlay.setStyle("-fx-font-weight: bold;" + "fx-font-size: 15");
 
         Text gameInstructions = new Text("The ships above consist of your entire fleet. To place them on your board you can click with either left click or right click." +
                                      " If you left click a cell, the ship in queue will be placed vertically starting from that cell. If you right click instead, the ship will be placed horizontally. "  +
                                      " The ships are chosen in the order above.");
-        gameInstructions.setStyle("-fx-text-alignment: justify");
+        gameInstructions.setStyle("-fx-text-alignment: justify;" + "fx-font-size: 15");
         gameInstructions.setWrappingWidth(200);
-        Text plTurns = new Text("Player Turns Remaining");
+        Text plTurns = new Text(" \n Player Turns Remaining");
         Text enTurns = new Text("Enemy Turns Remaining");
         TextField txt13 = new TextField("40");
         TextField txt14 = new TextField("40");
@@ -189,12 +199,23 @@ public class GameBoardController {
 
         VBox rightvbox = new VBox(10,TotalShips,carrierTotal, carrier, battleshipTotal, battleship, cruiserTotal, cruiser, submarineTotal, submarine, destroyerTotal,
                 destroyer, play, howToPlay, gameInstructions, plTurns, txt13, enTurns, txt14);
+        rightvbox.setBackground(new Background(new BackgroundFill(Color.rgb(200, 200, 200), CornerRadii.EMPTY, Insets.EMPTY)));
         rightvbox.setAlignment(Pos.TOP_CENTER);
         rightvbox.setStyle("-fx-padding: 16;" + "-fx-border-color: black;");
         root.setRight(rightvbox);
 
         // LEFT SIDE //
 
+        Text MenuItems = new Text("Menu");
+        MenuItems.setStyle("-fx-font-weight: bold");
+
+        // POPULATE LEFT VBOX //
+
+        VBox leftvbox = new VBox(10,MenuItems);
+        leftvbox.setBackground(new Background(new BackgroundFill(Color.rgb(200, 200, 200), CornerRadii.EMPTY, Insets.EMPTY)));
+        leftvbox.setAlignment(Pos.TOP_CENTER);
+        leftvbox.setStyle("-fx-padding: 16;" + "-fx-border-color: black;");
+        root.setLeft(leftvbox);
 
 
         // ENEMY BOARD //
@@ -277,11 +298,11 @@ public class GameBoardController {
         Text txtME= new Text();
         Text txtENEMY = new Text();
         txtME.setText("My Board");
-        txtME.setStyle("-fx-font-weight: bold");
+        txtME.setStyle("-fx-font-weight: bold;" + "-fx-font-size: 20");
         txtENEMY.setText("Enemy Board");
-        txtENEMY.setStyle("-fx-font-weight: bold");
+        txtENEMY.setStyle("-fx-font-weight: bold;" + "-fx-font-size: 20");
 
-        VBox vbox = new VBox(40,txtENEMY, enemyBoard, txtME ,playerBoard);
+        VBox vbox = new VBox(30,txtENEMY, enemyBoard, txtME ,playerBoard);
         vbox.setAlignment(Pos.CENTER);
 
         root.setCenter(vbox);
