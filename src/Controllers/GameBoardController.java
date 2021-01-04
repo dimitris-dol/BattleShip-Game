@@ -14,13 +14,11 @@ import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.util.Random;
 
@@ -32,11 +30,18 @@ public class GameBoardController {
     private boolean running = false;
     private Board enemyBoard, playerBoard;
 
-    private int shipsToPlace = 5;
+    private int shipsPlaced = 0;
 
     private boolean enemyTurn = true;
 
     private Random random = new Random();
+
+    private int[] length = new int[5];
+    private int[] hitScores = new int[5];
+    private int[] sinkScores = new int[5];
+    private String[] names = new String[5];
+
+
 
     // FIRST TURN BOOLEAN  //
 
@@ -50,6 +55,32 @@ public class GameBoardController {
     // GAME //
 
     private Parent createContent() {
+
+        // SHIP VARIABLES //
+
+        length[0] = 5;
+        length[1] = 4;
+        length[2] = 3;
+        length[3] = 3;
+        length[4] = 2;
+
+        hitScores[0] = 350;
+        hitScores[1] = 250;
+        hitScores[2] = 100;
+        hitScores[3] = 100;
+        hitScores[4] = 50;
+
+        sinkScores[0] = 1000;
+        sinkScores[1] = 500;
+        sinkScores[2] = 250;
+        sinkScores[3] = 0;
+        sinkScores[4] = 0;
+
+        names[0] = "Carrier";
+        names[1] = "Battleship";
+        names[2] = "Cruiser";
+        names[3] = "Submarine";
+        names[4] = "Destroyer";
 
         // MAIN WINDOW //
 
@@ -158,6 +189,7 @@ public class GameBoardController {
 
             if (enemyBoard.ships == 0) {
                 System.out.println("YOU WIN");
+                infoBox("You won!", null, "What a victory!");
                 running = false;
             }
 
@@ -172,37 +204,37 @@ public class GameBoardController {
                 return;
 
             Cell cell = (Cell) event.getSource();
-            if(shipsToPlace==5) {
-                if (playerBoard.placeCarrier(new Carrier(shipsToPlace, event.getButton() == MouseButton.PRIMARY), cell.x, cell.y)) {
-                    --shipsToPlace;
+            if(shipsPlaced==0) {
+                if (playerBoard.placeShip(new Ship(length[shipsPlaced], event.getButton() == MouseButton.PRIMARY, hitScores[shipsPlaced], sinkScores[shipsPlaced] , names[shipsPlaced]), cell.x, cell.y)) {
+                    ++shipsPlaced;
                     carrier.setText("0");
                 }
             }
-                if(shipsToPlace==4){
-                    if(playerBoard.placeBattleship(new Battleship(shipsToPlace,event.getButton()==MouseButton.PRIMARY), cell.x, cell.y)) {
+                if(shipsPlaced==1){
+                    if(playerBoard.placeShip(new Ship(length[shipsPlaced], event.getButton() == MouseButton.PRIMARY, hitScores[shipsPlaced-1], sinkScores[shipsPlaced] , names[shipsPlaced]), cell.x, cell.y)) {
                         battleship.setText("0");
-                        --shipsToPlace;
+                        ++shipsPlaced;
                     }
                 }
-                if(shipsToPlace==3) {
-                    if (playerBoard.placeCruiser(new Cruiser(shipsToPlace, event.getButton() == MouseButton.PRIMARY), cell.x, cell.y)) {
+                if(shipsPlaced==2) {
+                    if (playerBoard.placeShip(new Ship(length[shipsPlaced], event.getButton() == MouseButton.PRIMARY, hitScores[shipsPlaced], sinkScores[shipsPlaced] , names[shipsPlaced]), cell.x, cell.y)) {
                         cruiser.setText("0");
-                        --shipsToPlace;
+                        ++shipsPlaced;
                     }
                 }
-                if(shipsToPlace==2) {
-                    if (playerBoard.placeSubmarine(new Submarine(shipsToPlace, event.getButton() == MouseButton.PRIMARY), cell.x, cell.y)) {
+                if(shipsPlaced==3) {
+                    if (playerBoard.placeShip(new Ship(length[shipsPlaced], event.getButton() == MouseButton.PRIMARY, hitScores[shipsPlaced], sinkScores[shipsPlaced] , names[shipsPlaced]), cell.x, cell.y)) {
                         submarine.setText("0");
-                        --shipsToPlace;
+                        ++shipsPlaced;
                     }
                 }
-                if(shipsToPlace==1) {
-                    if (playerBoard.placeDestroyer(new Destroyer(shipsToPlace, event.getButton() == MouseButton.PRIMARY), cell.x, cell.y)) {
+                if(shipsPlaced==4) {
+                    if (playerBoard.placeShip(new Ship(length[shipsPlaced], event.getButton() == MouseButton.PRIMARY, hitScores[shipsPlaced], sinkScores[shipsPlaced] , names[shipsPlaced]), cell.x, cell.y)) {
                         destroyer.setText("0");
-                        --shipsToPlace;
+                        ++shipsPlaced;
                     }
                 }
-                if (shipsToPlace == 0) {
+                if (shipsPlaced == 5) {
                     play.setText("All set! Fire at Will!");
                     startGame();
                 }
@@ -249,44 +281,16 @@ public class GameBoardController {
 
     private void startGame() {
         // place enemy ships
-        int count = 5;
+        int count = 0;
 
+        while (count <= 4) {
             int x = random.nextInt(10);
             int y = random.nextInt(10);
 
-            while (count>0){
-                   System.out.println(count);
-                if (count == 5) {
-                    if(enemyBoard.placeCarrier(new Carrier(5, Math.random() < 0.5), x, y)) {
-                        count--;
-                   //    System.out.println(count);
-                    }
-                }
-                if(count == 4) {
-                    if(enemyBoard.placeBattleship(new Battleship(4, Math.random() < 0.5), x, y)) {
-                        count--;
-                     //   System.out.println(count);
-                    }
-                }
-                if(count==3){
-                    if(enemyBoard.placeCruiser(new Cruiser(3, Math.random() < 0.5), x, y)) {
-                        count--;
-                    //    System.out.println(count);
-                    }
-                }
-                if(count==2){
-                    if(enemyBoard.placeSubmarine(new Submarine(3, Math.random() < 0.5), x, y)) {
-                        count--;
-                    //    System.out.println(count);
-                    }
-                }
-                if(count==1) {
-                    if(enemyBoard.placeDestroyer(new Destroyer(2, Math.random() < 0.5), x, y)) {
-                        count--;
-                     //   System.out.println(count);
-                    }
-                }
+            if (enemyBoard.placeShip(new Ship(length[count], Math.random() < 0.5,hitScores[count], sinkScores[count], names[count]), x, y)) {
+                count++;
             }
+        }
 
         if (enemyTurn()) {
             infoBox("You go second!", null, "Unlucky, sir!");

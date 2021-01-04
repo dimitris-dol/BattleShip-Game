@@ -1,18 +1,14 @@
 package GameFiles;
 
-import Models.*;
+import Models.Ship;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 public class Cell extends Rectangle {
     public int x, y;
     public Ship ship = null;
-    public Carrier carrier = null;
-    public Battleship battleship = null;
-    public Cruiser cruiser = null;
-    public Submarine submarine= null;
-    public Destroyer destroyer = null;
     public boolean wasShot = false;
+    public int highscore=0;
 
     private Board board;
 
@@ -31,53 +27,9 @@ public class Cell extends Rectangle {
 
         if (ship != null) {
             ship.hit();
+            highscore =+ship.hitScore;
             setFill(Color.RED);
             if (!ship.isAlive()) {
-                board.ships--;
-            }
-            return true;
-        }
-
-        if (carrier != null) {
-            carrier.hit();
-            setFill(Color.RED);
-            if (!carrier.isAlive()) {
-                board.ships--;
-            }
-            return true;
-        }
-
-        if (cruiser != null) {
-            cruiser.hit();
-            setFill(Color.RED);
-            if (!cruiser.isAlive()) {
-                board.ships--;
-            }
-            return true;
-        }
-
-        if (battleship != null) {
-            battleship.hit();
-            setFill(Color.RED);
-            if (!battleship.isAlive()) {
-                board.ships--;
-            }
-            return true;
-        }
-
-        if (submarine != null) {
-            submarine.hit();
-            setFill(Color.RED);
-            if (!submarine.isAlive()) {
-                board.ships--;
-            }
-            return true;
-        }
-
-        if (destroyer != null) {
-            destroyer.hit();
-            setFill(Color.RED);
-            if (!destroyer.isAlive()) {
                 board.ships--;
             }
             return true;
