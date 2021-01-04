@@ -4,22 +4,19 @@ import GameFiles.Board;
 import GameFiles.Cell;
 import Models.*;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Separator;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToolBar;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-import java.io.IOException;
 import java.util.Random;
 
 
@@ -41,6 +38,9 @@ public class GameBoardController {
     private int[] sinkScores = new int[5];
     private String[] names = new String[5];
 
+    private int enemyScore=0;
+    private int myScore=0;
+
 
 
     // FIRST TURN BOOLEAN  //
@@ -53,6 +53,7 @@ public class GameBoardController {
 
 
     // GAME //
+
 
     private Parent createContent() {
 
@@ -85,55 +86,74 @@ public class GameBoardController {
         // MAIN WINDOW //
 
         BorderPane root = new BorderPane();
-        root.setPrefSize(1480, 920);
+        root.setPrefSize(1520, 920);
 
         // TOP TOOLBAR //
 
         ToolBar toolbar = new ToolBar();
+        toolbar.setStyle("-fx-min-width: 1520");
         root.setTop(toolbar);
 
         // SET TOOLBAR FIELDS //
 
-        Text txt1 = new Text();
+        Button txt1 = new Button(" Player Ships");
         TextField txt2 = new TextField();
-        Text txt3 = new Text();
+        Button txt3 = new Button(" Enemy Ships");
         TextField txt4 = new TextField();
-        Text txt5 = new Text();
+        Button txt5 = new Button(" Player Points");
         TextField txt6 = new TextField();
-        Text txt7 = new Text();
+        Button txt7 = new Button(" Enemy Points");
         TextField txt8 = new TextField();
-        Text txt9 = new Text();
+        Button txt9 = new Button("Show Player %");
         TextField txt10 = new TextField();
-        Text txt11 = new Text();
+        Button txt11 = new Button("Show Enemy %");
         TextField txt12 = new TextField();
 
-        txt1.setText("Player Ships");
         txt2.setText("N/A");
         txt2.setDisable(true);
-        txt2.setStyle("-fx-opacity: 1;");
-        txt3.setText("Enemy Ships");
+        txt2.setStyle("-fx-opacity: 1;" + "-fx-max-width: 120");
         txt4.setText("N/A");
         txt4.setDisable(true);
-        txt4.setStyle("-fx-opacity: 1;");
-        txt5.setText("Player Points");
+        txt4.setStyle("-fx-opacity: 1;"  + "-fx-max-width: 120");
         txt6.setText("N/A");
         txt6.setDisable(true);
-        txt6.setStyle("-fx-opacity: 1;");
-        txt7.setText("Enemy Points");
+        txt6.setStyle("-fx-opacity: 1;"  + "-fx-max-width: 120");
         txt8.setText("N/A");
         txt8.setDisable(true);
-        txt8.setStyle("-fx-opacity: 1;");
-        txt9.setText("Player Percentage");
+        txt8.setStyle("-fx-opacity: 1;"  + "-fx-max-width: 120");
         txt10.setText("N/A");
         txt10.setDisable(true);
-        txt10.setStyle("-fx-opacity: 1;");
-        txt11.setText("Enemy Percentage");
+        txt10.setStyle("-fx-opacity: 1;"  + "-fx-max-width: 120");
         txt12.setText("N/A");
         txt12.setDisable(true);
-        txt12.setStyle("-fx-opacity: 1;");
+        txt12.setStyle("-fx-opacity: 1;"  + "-fx-max-width: 120");
 
         Separator separator = new Separator();
         Separator separator2 = new Separator();
+
+        // BUTTON FUNCTIONALITY //
+
+        // first button
+        EventHandler<ActionEvent> plships = plships1 -> txt2.setText(String.valueOf(playerBoard.ships));
+
+        txt1.setOnAction(plships);
+
+        // second button
+        EventHandler<ActionEvent> enships = enships1 -> txt4.setText(String.valueOf(enemyBoard.ships));
+
+        txt3.setOnAction(enships);
+
+        // third button
+        EventHandler<ActionEvent> plscore = plscore1 -> txt6.setText(String.valueOf(myScore));
+
+        txt5.setOnAction(plscore);
+
+        // fourth button
+        EventHandler<ActionEvent> enscore = enscore1 -> txt8.setText(String.valueOf(enemyScore));
+
+        txt7.setOnAction(enscore);
+
+
 
         // POPULATE TOOLBAR //
 
@@ -182,14 +202,16 @@ public class GameBoardController {
                 return;
 
             Cell cell = (Cell) event.getSource();
-            if (cell.wasShot)
+            if (cell.wasShot) {
                 return;
+            }
 
             enemyTurn = !cell.shoot();
+            myScore= myScore + cell.highscore;
 
             if (enemyBoard.ships == 0) {
                 System.out.println("YOU WIN");
-                infoBox("You won!", null, "What a victory!");
+                infoBox("You won!", "What a victory!");
                 running = false;
             }
 
@@ -267,11 +289,14 @@ public class GameBoardController {
             if (cell.wasShot)
                 continue;
 
+
             enemyTurn = cell.shoot();
+            enemyScore=enemyScore + cell.highscore;
+
 
             if (playerBoard.ships == 0) {
                 System.out.println("YOU LOSE");
-                infoBox("You lost!", null, "Bad Luck!");
+                infoBox("You lost!", "Bad Luck!");
                 running = false;
             }
         }
@@ -293,12 +318,14 @@ public class GameBoardController {
         }
 
         if (enemyTurn()) {
-            infoBox("You go second!", null, "Unlucky, sir!");
+            infoBox("You go second!", "Unlucky, sir!");
             enemyMove();
         }
         else {
-            infoBox("You go first!", null, "We got the upper hand!");
+            infoBox("You go first!", "We got the upper hand!");
         }
+
+
 
         running = true;
     }
@@ -306,7 +333,7 @@ public class GameBoardController {
     // PLAY BUTTON //
 
     @FXML
-    private void GameScene(ActionEvent event) throws IOException {
+    private void GameScene(ActionEvent event) {
         Scene scene2 = new Scene(createContent());
         Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
         window.setScene(scene2);
@@ -315,11 +342,11 @@ public class GameBoardController {
 
     // INFO BOX POPUP //
 
-    public static void infoBox(String infoMessage, String headerText, String title) {
+    private static void infoBox(String infoMessage, String title) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setContentText(infoMessage);
         alert.setTitle(title);
-        alert.setHeaderText(headerText);
+        alert.setHeaderText(null);
         alert.showAndWait();
     }
 

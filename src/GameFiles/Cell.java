@@ -6,13 +6,13 @@ import javafx.scene.shape.Rectangle;
 
 public class Cell extends Rectangle {
     public int x, y;
-    public Ship ship = null;
+    Ship ship = null;
     public boolean wasShot = false;
     public int highscore=0;
 
     private Board board;
 
-    public Cell(int x, int y, Board board) {
+    Cell(int x, int y, Board board) {
         super(30, 30);
         this.x = x;
         this.y = y;

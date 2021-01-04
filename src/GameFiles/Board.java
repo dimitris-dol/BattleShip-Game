@@ -10,12 +10,12 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+
 import java.util.List;
 
 public class Board extends Parent {
     private VBox rows = new VBox();
-    private boolean enemy = false;
+    private boolean enemy;
     public int ships = 5;
 
     public Board(boolean enemy, EventHandler<? super MouseEvent> handler) {
@@ -77,7 +77,7 @@ public class Board extends Parent {
                 new Point2D(x, y + 1)
         };
 
-        List<Cell> neighbors = new ArrayList<Cell>();
+        List<Cell> neighbors = new ArrayList<>();
 
         for (Point2D p : points) {
             if (isValidPoint(p)) {
