@@ -1,5 +1,8 @@
 package GameFiles;
 
+import Exceptions.AdjacentTilesException;
+import Exceptions.OverlapTilesException;
+import Exceptions.OversizeException;
 import Models.*;
 import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
@@ -12,6 +15,8 @@ import javafx.scene.paint.Color;
 import java.util.ArrayList;
 
 import java.util.List;
+
+import static jdk.nashorn.internal.runtime.Context.printStackTrace;
 
 public class Board extends Parent {
     private VBox rows = new VBox();
@@ -121,8 +126,11 @@ public class Board extends Parent {
         List<Cell> neighbors = new ArrayList<>();
 
         for (Point2D p : points) {
-            if (isValidPoint(p)) {
+            try{
+                isValidPoint(p);
                 neighbors.add(getCell((int)p.getX(), (int)p.getY()));
+            }catch (OversizeException e ){
+                printStackTrace(e);
             }
         }
 
@@ -134,49 +142,94 @@ public class Board extends Parent {
 
         if (ship.vertical) {
             for (int i = y; i < y + length; i++) {
-                if (!isValidPoint(x, i))
-                    return false;
-
-                Cell cell = getCell(x, i);
-                if (cell.ship != null)
-                    return false;
-
-                for (Cell neighbor : getNeighbors(x, i)) {
-                    if (!isValidPoint(x, i))
+                try {
+                    isValidPoint(x, i);
+                    Cell cell = getCell(x, i);
+                    try {
+                        isCellEmpty(cell);
+                    } catch (OverlapTilesException e) {
                         return false;
+                    }
 
-                    if (neighbor.ship != null)
-                        return false;
+                    for (Cell neighbor : getNeighbors(x, i)) {
+                        try {
+                            isValidPoint(x, i);
+                            try {
+                                isNeighborEmpty(neighbor);
+                            } catch (AdjacentTilesException e) {
+                                return false;
+                            }
+                        } catch (OversizeException e) {
+                            return false;
+                        }
+                    }
+
+                } catch (OversizeException e) {
+                    return false;
                 }
             }
-        }
-        else {
+        } else {
             for (int i = x; i < x + length; i++) {
-                if (!isValidPoint(i, y))
-                    return false;
+                try {
+                    isValidPoint(i, y);
 
-                Cell cell = getCell(i, y);
-                if (cell.ship != null)
-                    return false;
-
-                for (Cell neighbor : getNeighbors(i, y)) {
-                    if (!isValidPoint(i, y))
+                    Cell cell = getCell(i, y);
+                    try {
+                        isCellEmpty(cell);
+                    } catch (OverlapTilesException e) {
                         return false;
+                    }
 
-                    if (neighbor.ship != null)
-                        return false;
+                    for (Cell neighbor : getNeighbors(i, y)) {
+                        try {
+                            isValidPoint(i, y);
+                            try {
+                                isNeighborEmpty(neighbor);
+                            } catch (AdjacentTilesException e) {
+                                return false;
+                            }
+                        } catch (OversizeException e) {
+                            return false;
+                        }
+                    }
+
+                } catch (OversizeException e) {
+                    return false;
                 }
+
             }
         }
 
-        return true;
-    }
+         return true;
+     }
 
-    private boolean isValidPoint(Point2D point) {
+    private boolean isValidPoint(Point2D point) throws OversizeException{
         return isValidPoint(point.getX(), point.getY());
     }
 
-    private boolean isValidPoint(double x, double y) {
-        return x >= 0 && x < 10 && y >= 0 && y < 10;
+    private boolean isValidPoint(double x, double y) throws OversizeException {
+        if (x >= 0 && x < 10 && y >= 0 && y < 10){
+            return true;
+        }else{
+            throw new OversizeException("Ship out of board!!!");
+        }
     }
+
+    private boolean isCellEmpty(Cell cell) throws OverlapTilesException {
+        if (cell.ship == null){
+            return true;
+        }else{
+            throw new OverlapTilesException("Already a ship in this position!!!");
+        }
+    }
+
+    private boolean isNeighborEmpty(Cell cell) throws AdjacentTilesException {
+        if (cell.ship == null){
+            return true;
+        }
+        else{
+            throw  new AdjacentTilesException("Too close to another ship!!!");
+        }
+    }
+
 }

@@ -1,5 +1,6 @@
 package Controllers;
 
+import Exceptions.InvalidCountException;
 import GameFiles.Board;
 import GameFiles.Cell;
 import Models.*;
@@ -18,6 +19,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import java.util.Random;
+
 
 
 public class GameBoardController {
@@ -62,7 +64,7 @@ public class GameBoardController {
     // GAME //
 
 
-    private Parent createContent() {
+    private Parent createContent() throws InvalidCountException{
 
         // SHIP VARIABLES //
 
@@ -288,9 +290,12 @@ public class GameBoardController {
                 }
                 if (shipsPlaced == 5) {
                     play.setText("All set! Fire at Will!");
-                    startGame(txt2,txt8,txt14,txt12);
+                    try {
+                        startGame(txt2,txt8,txt14,txt12);
+                    } catch (InvalidCountException e) {
+                        e.printStackTrace();
+                    }
                 }
-
         });
 
         // MAIN BOARD //
@@ -343,7 +348,7 @@ public class GameBoardController {
 
     // PLACE ENEMY SHIPS. THEN GAME STARTS //
 
-    private void startGame(TextField shipText,TextField scoreText, TextField shotsText, TextField percText) {
+    private void startGame(TextField shipText,TextField scoreText, TextField shotsText, TextField percText) throws InvalidCountException{
         // place enemy ships
         int count = 0;
 
@@ -351,7 +356,7 @@ public class GameBoardController {
             int x = random.nextInt(10);
             int y = random.nextInt(10);
 
-            if (enemyBoard.placeShip(new Ship(length[count], Math.random() < 0.5,hitScores[count], sinkScores[count], names[count]), x, y)) {
+            if (enemyBoard.placeShip(new Ship(length[count], Math.random() < 0.5, hitScores[count], sinkScores[count], names[count]), x, y)) {
                 count++;
             }
         }
@@ -361,11 +366,8 @@ public class GameBoardController {
             enemyMove(shipText,scoreText,shotsText, percText);
         }
         else {
-           // enemyShots=1;
             infoBox("You go first!", "We got the upper hand!");
         }
-
-
 
         running = true;
     }
@@ -373,7 +375,7 @@ public class GameBoardController {
     // PLAY BUTTON //
 
     @FXML
-    private void GameScene(ActionEvent event) {
+    private void GameScene(ActionEvent event) throws InvalidCountException {
         Scene scene2 = new Scene(createContent());
         Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
         window.setScene(scene2);
