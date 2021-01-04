@@ -206,7 +206,7 @@ public class GameBoardController {
 
         // LEFT SIDE //
 
-        Text MenuItems = new Text("Menu");
+        Text MenuItems = new Text("Menus");
         MenuItems.setStyle("-fx-font-weight: bold");
 
         // POPULATE LEFT VBOX //
