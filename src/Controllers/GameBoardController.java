@@ -6,7 +6,6 @@ import GameFiles.Cell;
 import Main.Main;
 import Models.*;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -242,18 +241,41 @@ public class GameBoardController {
 
         //1 menu
         menuItem1.setOnAction(event -> { //restart
-            infoBox("Game will now restart!", "Restart");
-            cleanup();
-            try {
-                restart();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+           // infoBox("Game will now restart!", "Restart");
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Restart");
+            alert.setHeaderText("Are you sure you want to restart?");
+            new ButtonType("Yes");
+            new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+            alert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.CANCEL) {
+                    event.consume();
+                }
+                else {
+                    cleanup();
+                    try {
+                        restart();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
         });
 
         menuItem3.setOnAction(event -> { //exit
-            infoBox("Game will now exit!", "Exit");
-            System.exit(0);
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Exit");
+            alert.setHeaderText("Are you sure you want to exit?");
+            new ButtonType("Yes");
+            new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+            alert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.CANCEL) {
+                    event.consume();
+                }
+                else {
+                    cleanup();
+                }
+            });
         });
 
         //2 menu
@@ -263,6 +285,7 @@ public class GameBoardController {
 
             StringBuilder shipsText = new StringBuilder();
             Alert alert = new Alert(Alert.AlertType.INFORMATION,"");
+            alert.setTitle("Enemy Ships");
             alert.setHeaderText("Enemy Ships Information");
             if(enemyBoard.Ships.isEmpty()){
                 shipsText = new StringBuilder("No enemy ships on the board");
@@ -291,6 +314,8 @@ public class GameBoardController {
         //show my Last 5 shots
         menuItem5.setOnAction(ePlayerShots -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION,"");
+            alert.setHeaderText("My Shot History");
+            alert.setTitle("Shot History");
             StringBuilder myShots = new StringBuilder();
             if(playerHistory.isEmpty()){
                 myShots = new StringBuilder("You haven't shot yet");
@@ -303,13 +328,14 @@ public class GameBoardController {
                 }
             }
             alert.setContentText(myShots.toString());
-            alert.setHeaderText("My Shot History");
             alert.showAndWait();
         });
 
         //show enemy last 5 shots
         menuItem6.setOnAction(eEnemyShots -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION,"");
+            alert.setHeaderText("Enemy Shot History");
+            alert.setTitle("Shot History");
             StringBuilder enemyShots = new StringBuilder();
             if(enemyHistory.isEmpty()){
                 enemyShots = new StringBuilder("Enemy hasn't shot yet");
@@ -322,7 +348,6 @@ public class GameBoardController {
                 }
             }
             alert.setContentText(enemyShots.toString());
-            alert.setHeaderText("Enemy Shot History");
             alert.showAndWait();
         });
 
