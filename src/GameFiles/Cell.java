@@ -6,7 +6,7 @@ import javafx.scene.shape.Rectangle;
 
 public class Cell extends Rectangle {
     public int x, y;
-    Ship ship = null;
+    public Ship ship = null;
     public boolean wasShot = false;
     public int highscore=0;
     public int perc=0;

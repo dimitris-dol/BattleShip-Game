@@ -23,6 +23,8 @@ public class Board extends Parent {
     private boolean enemy;
     public int ships = 5;
 
+    public ArrayList<Ship> Ships = new ArrayList<>();
+
     public Board(boolean enemy, EventHandler<? super MouseEvent> handler) {
         this.enemy = enemy;
         for (int y = 0; y < 10; y++) {
@@ -54,8 +56,8 @@ public class Board extends Parent {
                                     cell.setStroke(Color.BLUE);
                                     break;
                                 case "Battleship":
-                                    cell.setFill(Color.LIGHTCORAL);
-                                    cell.setStroke(Color.RED);
+                                    cell.setFill(Color.PLUM);
+                                    cell.setStroke(Color.ORANGERED);
                                     break;
                                 case "Cruiser":
                                     cell.setFill(Color.GOLD);
@@ -84,8 +86,8 @@ public class Board extends Parent {
                                     cell.setStroke(Color.BLUE);
                                     break;
                                 case "Battleship":
-                                    cell.setFill(Color.LIGHTCORAL);
-                                    cell.setStroke(Color.RED);
+                                    cell.setFill(Color.PLUM);
+                                    cell.setStroke(Color.ORANGERED);
                                     break;
                                 case "Cruiser":
                                     cell.setFill(Color.GOLD);
@@ -103,7 +105,7 @@ public class Board extends Parent {
                         }
                     }
                 }
-
+                Ships.add(ship);
                 return true;
             }
 
@@ -211,7 +213,7 @@ public class Board extends Parent {
         if (x >= 0 && x < 10 && y >= 0 && y < 10){
             return true;
         }else{
-            throw new OversizeException("Ship out of board!!!");
+            throw new OversizeException("Can't place ship. Out of bounds placement.");
         }
     }
 
@@ -219,7 +221,7 @@ public class Board extends Parent {
         if (cell.ship == null){
             return true;
         }else{
-            throw new OverlapTilesException("Already a ship in this position!!!");
+            throw new OverlapTilesException("There is a ship already in this position.");
         }
     }
 
@@ -228,7 +230,7 @@ public class Board extends Parent {
             return true;
         }
         else{
-            throw  new AdjacentTilesException("Too close to another ship!!!");
+            throw  new AdjacentTilesException("Too close to ship. Choose a different tile.");
         }
     }
 

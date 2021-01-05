@@ -3,8 +3,10 @@ package Controllers;
 import Exceptions.InvalidCountException;
 import GameFiles.Board;
 import GameFiles.Cell;
+import Main.Main;
 import Models.*;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -18,6 +20,8 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+
+import java.util.ArrayList;
 import java.util.Random;
 
 
@@ -49,8 +53,9 @@ public class GameBoardController {
     private int myKill=0;
     private int enKill=0;
     private float myPerc =0;
-    private float enPerc =0;
 
+    private ArrayList<Cell> playerHistory = new ArrayList<>(5);
+    private ArrayList<Cell> enemyHistory = new ArrayList<>(5);
 
     // FIRST TURN BOOLEAN  //
 
@@ -208,12 +213,122 @@ public class GameBoardController {
 
         // LEFT SIDE //
 
+        //1st menu
         Text MenuItems = new Text("Menus");
         MenuItems.setStyle("-fx-font-weight: bold");
 
+        MenuItem menuItem1 = new MenuItem("Restart");
+        menuItem1.setStyle("-fx-padding: 5 22 10 22;");
+        MenuItem menuItem2 = new MenuItem("Load");
+        menuItem2.setStyle("-fx-padding: 5 22 10 22;");
+        MenuItem menuItem3 = new MenuItem("Exit");
+        menuItem3.setStyle("-fx-padding: 5 22 5 22;");
+        MenuButton menuButton = new MenuButton("Application", null, menuItem1, menuItem2, menuItem3);
+        menuButton.setStyle("-fx-padding: 0 0 0 0;");
+
+        //2nd menu
+        Text menu2 = new Text(" \n \n \n \n \n \n \n \n ");
+
+        MenuItem menuItem4 = new MenuItem("Enemy Ships");
+        menuItem4.setStyle("-fx-padding: 5 9 10 9;");
+        MenuItem menuItem5 = new MenuItem("Player Shots");
+        menuItem5.setStyle("-fx-padding: 5 9 10 9;");
+        MenuItem menuItem6 = new MenuItem("Enemy Shots");
+        menuItem6.setStyle("-fx-padding: 5 9 5 9;");
+        MenuButton menuButton2 = new MenuButton("Details", null, menuItem4, menuItem5, menuItem6);
+        menuButton2.setStyle("-fx-padding: 0 15 0 15;");
+
+        // MENU FUNCTIONALITY //
+
+        //1 menu
+        menuItem1.setOnAction(event -> { //restart
+            infoBox("Game will now restart!", "Restart");
+            cleanup();
+            try {
+                restart();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        menuItem3.setOnAction(event -> { //exit
+            infoBox("Game will now exit!", "Exit");
+            System.exit(0);
+        });
+
+        //2 menu
+        menuItem4.setOnAction(event -> { //show enemy ships
+
+            Ship Shipd;
+
+            StringBuilder shipsText = new StringBuilder();
+            Alert alert = new Alert(Alert.AlertType.INFORMATION,"");
+            alert.setHeaderText("Enemy Ships Information");
+            if(enemyBoard.Ships.isEmpty()){
+                shipsText = new StringBuilder("No enemy ships on the board");
+            }
+            else{
+                for (int i = 0;i <enemyBoard.Ships.size(); i++){
+                    Shipd = enemyBoard.Ships.get(i);
+                    if(!Shipd.isHit()){
+                        shipsText.append(Shipd.shipType).append(": healthy\n");
+                    }
+                    else{
+                        if(Shipd.isAlive()){
+                            shipsText.append(Shipd.shipType).append(": hit\n");
+                        }
+                        else{
+                            shipsText.append(Shipd.shipType).append(": sunk\n");
+                        }
+                    }
+                }
+            }
+
+            alert.setContentText(shipsText.toString());
+            alert.showAndWait();
+        });
+
+        //show my Last 5 shots
+        menuItem5.setOnAction(ePlayerShots -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION,"");
+            StringBuilder myShots = new StringBuilder();
+            if(playerHistory.isEmpty()){
+                myShots = new StringBuilder("You haven't shot yet");
+            }
+            for (Cell tmpCell : playerHistory) {
+                if (tmpCell.ship == null) {
+                    myShots.append("(").append(tmpCell.x).append(".").append(tmpCell.y).append(")").append(": Miss \n");
+                } else {
+                    myShots.append("(").append(tmpCell.x).append(".").append(tmpCell.y).append(")").append(": Hit ").append(tmpCell.ship.shipType).append("\n");
+                }
+            }
+            alert.setContentText(myShots.toString());
+            alert.setHeaderText("My Shot History");
+            alert.showAndWait();
+        });
+
+        //show enemy last 5 shots
+        menuItem6.setOnAction(eEnemyShots -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION,"");
+            StringBuilder enemyShots = new StringBuilder();
+            if(enemyHistory.isEmpty()){
+                enemyShots = new StringBuilder("Enemy hasn't shot yet");
+            }
+            for (Cell tmpCell : enemyHistory) {
+                if (tmpCell.ship == null) {
+                    enemyShots.append("(").append(tmpCell.x).append(".").append(tmpCell.y).append(")").append(": Miss \n");
+                } else {
+                    enemyShots.append("(").append(tmpCell.x).append(".").append(tmpCell.y).append(")").append(": Hit ").append(tmpCell.ship.shipType).append("\n");
+                }
+            }
+            alert.setContentText(enemyShots.toString());
+            alert.setHeaderText("Enemy Shot History");
+            alert.showAndWait();
+        });
+
         // POPULATE LEFT VBOX //
 
-        VBox leftvbox = new VBox(10,MenuItems);
+        VBox leftvbox = new VBox(10,MenuItems, menuButton, menu2, menuButton2);
         leftvbox.setBackground(new Background(new BackgroundFill(Color.rgb(200, 200, 200), CornerRadii.EMPTY, Insets.EMPTY)));
         leftvbox.setAlignment(Pos.TOP_CENTER);
         leftvbox.setStyle("-fx-padding: 16;" + "-fx-border-color: black;");
@@ -240,6 +355,11 @@ public class GameBoardController {
             txt6.setText(String.valueOf(myScore));
             txt10.setText(String.valueOf(myPerc));
             txt13.setText(String.valueOf(40-myShots));
+
+            if (playerHistory.size() == 5) {
+                playerHistory.remove(0);
+            }
+            playerHistory.add(cell);
 
             if (enemyBoard.ships == 0 ||  ((myShots==40 || enemyShots==40) && myScore>enemyScore )) {
                 System.out.println("YOU WIN");
@@ -331,11 +451,16 @@ public class GameBoardController {
             enemyScore=enemyScore + cell.highscore;
             enemyShots= enemyShots+1;
             enKill=enKill+cell.perc;
-            enPerc =(float) (((enKill)*100) / enemyShots);
+            float enPerc = (float) (((enKill) * 100) / enemyShots);
             scoreText.setText(String.valueOf(enemyScore));
             shotsText.setText(String.valueOf(40-enemyShots));
             shipText.setText(String.valueOf(playerBoard.ships));
             percText.setText(String.valueOf(enPerc));
+
+            if (enemyHistory.size() == 5) {
+                enemyHistory.remove(0);
+            }
+            enemyHistory.add(cell);
 
 
             if (playerBoard.ships == 0 ||  ((myShots==40 || enemyShots==40) && myScore<enemyScore )) {
@@ -374,10 +499,13 @@ public class GameBoardController {
 
     // PLAY BUTTON //
 
+    private Stage thisStage;
+
     @FXML
     private void GameScene(ActionEvent event) throws InvalidCountException {
         Scene scene2 = new Scene(createContent());
         Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        thisStage=window;
         window.setScene(scene2);
         window.show();
     }
@@ -390,6 +518,20 @@ public class GameBoardController {
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.showAndWait();
+    }
+
+    // INITIALIZE SCREEN TO EARLY STATE //
+
+    private void cleanup() {
+        thisStage.close();
+    }
+
+    // GAME RESTARTS //
+
+    private void restart() throws Exception {
+        cleanup();
+        Main app = new Main();
+        app.start(new Stage());
     }
 
 }
