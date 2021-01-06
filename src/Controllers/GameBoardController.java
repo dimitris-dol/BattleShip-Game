@@ -20,9 +20,11 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Random;
-
+import java.util.Scanner;
 
 
 public class GameBoardController {
@@ -55,6 +57,9 @@ public class GameBoardController {
 
     private ArrayList<Cell> playerHistory = new ArrayList<>(5);
     private ArrayList<Cell> enemyHistory = new ArrayList<>(5);
+
+    private String scenarioID;
+    private File scenario;
 
     // FIRST TURN BOOLEAN  //
 
@@ -262,6 +267,19 @@ public class GameBoardController {
             });
         });
 
+        menuItem2.setOnAction(event -> { //load scenario
+            TextInputDialog scenarioText = new TextInputDialog();
+            scenarioText.setHeaderText("Please enter the scenario name");
+            scenarioText.showAndWait();
+            scenarioID = scenarioText.getEditor().getText();
+            try {
+                scenarioLoadPlayer(txt2,txt8,txt14, txt12);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+                });
+
+
         menuItem3.setOnAction(event -> { //exit
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Exit");
@@ -464,15 +482,16 @@ public class GameBoardController {
 
     private void enemyMove(TextField shipText, TextField scoreText, TextField shotsText, TextField percText) {
         while (enemyTurn) {
-            int x = random.nextInt(10);
+            int x = random.nextInt(10); //shoot
             int y = random.nextInt(10);
 
             Cell cell = playerBoard.getCell(x, y);
             if (cell.wasShot)
                 continue;
 
-
             enemyTurn = cell.shoot();
+
+            //enemy variables
             enemyScore=enemyScore + cell.highscore;
             enemyShots= enemyShots+1;
             enKill=enKill+cell.perc;
@@ -487,7 +506,7 @@ public class GameBoardController {
             }
             enemyHistory.add(cell);
 
-
+            //loss
             if (playerBoard.ships == 0 ||  ((myShots==40 || enemyShots==40) && myScore<enemyScore )) {
                 System.out.println("YOU LOSE");
                 infoBox("You lost!", "Bad Luck!");
@@ -517,6 +536,100 @@ public class GameBoardController {
         }
         else {
             infoBox("You go first!", "We got the upper hand!");
+        }
+
+        running = true;
+    }
+
+    // LOAD SCENARIO PLAYER //
+
+    private void scenarioLoadPlayer(TextField shipText,TextField scoreText, TextField shotsText, TextField percText){
+        if(scenarioID == null){
+            System.out.println("Error. File not found");
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Error. Scenario not found!");
+            alert.showAndWait();
+        }else if(shipsPlaced!=0){
+            System.out.println("Error. Ships have already been placed!");
+            infoBox("You have already placed ships! You can't load another game! Restart first if you want to load a scenario.", "Invalid Load");
+        }
+        else {
+            try {
+                int count=0;
+                scenario = new File("C:\\Users\\jimmd\\IdeaProjects\\BattleShip Game\\src\\MediaLab\\player_"+ scenarioID +".txt");
+                Scanner myReader = new Scanner(scenario);
+                while (myReader.hasNext()) {
+                    String data = myReader.next();
+                    int type = Character.getNumericValue(data.charAt(0)) - 1;
+                    int coordinateY = Character.getNumericValue(data.charAt(2));
+                    int coordinateX = Character.getNumericValue(data.charAt(4));
+                    int vertical = Character.getNumericValue(data.charAt(6));
+                    boolean verticalCheck = (vertical == 2);
+                    System.out.println(type+" "+coordinateX+" "+coordinateY+" "+vertical);
+                    Cell cell = playerBoard.getCell(coordinateX,coordinateY);
+                    if(playerBoard.placeShip(new Ship(length[type], verticalCheck ,hitScores[type],sinkScores[type],names[type]), cell.x, cell.y)){
+                        count++;
+                        if(count>4){
+                            enemyScenarioLoad(shipText,scoreText,shotsText,percText);
+                        }
+                    }
+                    else {
+                        System.out.println("Error with ship"+ names[type]);
+                        Alert alert = new Alert(Alert.AlertType.WARNING, "Error with friendly ship: "+ names[type] +". Please load a working scenario!");
+                        alert.showAndWait();
+                        restart();
+                    }
+                }
+            } catch (FileNotFoundException | InvalidCountException e) {
+                System.out.print("File not found");
+                Alert alert = new Alert(Alert.AlertType.WARNING, "Error. Scenario not found!");
+                alert.showAndWait();
+            } catch (Exception ee) {
+                ee.printStackTrace();
+            }
+        }
+    }
+
+    //ENEMY SCENARIO LOAD //
+
+    private void enemyScenarioLoad(TextField shipText,TextField scoreText, TextField shotsText, TextField percText) throws InvalidCountException{
+        // place enemy ships
+        int count = 0;
+
+        if(scenarioID == null){
+            System.out.println("Error");
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Error. Scenario not found!");
+            alert.showAndWait();
+        }
+        else {
+            try {
+                scenario = new File("C:\\Users\\jimmd\\IdeaProjects\\BattleShip Game\\src\\MediaLab\\enemy_"+ scenarioID +".txt");
+                Scanner myReader = new Scanner(scenario);
+                while (myReader.hasNext()) {
+                    String data = myReader.next();
+                    int type = Character.getNumericValue(data.charAt(0)) - 1;
+                    int coordinateY = Character.getNumericValue(data.charAt(2));
+                    int coordinateX = Character.getNumericValue(data.charAt(4));
+                    int vertical = Character.getNumericValue(data.charAt(6));
+                    boolean verticalCheck = (vertical == 2);
+                    System.out.println(type+" "+coordinateX+" "+coordinateY+" "+vertical);
+                    Cell cell = enemyBoard.getCell(coordinateX,coordinateY);
+                    if(enemyBoard.placeShip(new Ship(length[type], verticalCheck ,hitScores[type],sinkScores[type],names[type]), cell.x, cell.y)) {
+                        count++;
+                    }
+                    else {
+                        System.out.println("Error with ship"+ names[type]);
+                        Alert alert = new Alert(Alert.AlertType.WARNING, "Error with enemy ship: "+ names[type] +". Please load a working scenario!");
+                        alert.showAndWait();
+                        restart();
+                    }
+                }
+            } catch (FileNotFoundException e) {
+                System.out.print("File not found");
+                Alert alert = new Alert(Alert.AlertType.WARNING, "Error. Scenario not found!");
+                alert.showAndWait();
+            } catch (Exception ee) {
+                ee.printStackTrace();
+            }
         }
 
         running = true;
