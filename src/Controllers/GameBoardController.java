@@ -303,11 +303,7 @@ public class GameBoardController {
         menuItem4.setOnAction(event -> { //show enemy ships
 
             Ship Shipd;
-
             StringBuilder shipsText = new StringBuilder();
-            Alert alert = new Alert(Alert.AlertType.INFORMATION,"");
-            alert.setTitle("Enemy Ships");
-            alert.setHeaderText("Enemy Ships Information");
             if(enemyBoard.Ships.isEmpty()){
                 shipsText = new StringBuilder("No enemy ships on the board");
             }
@@ -328,15 +324,11 @@ public class GameBoardController {
                 }
             }
 
-            alert.setContentText(shipsText.toString());
-            alert.showAndWait();
+            infoBox(shipsText.toString(), "Enemy Ships Information");
         });
 
         //show my Last 5 shots
         menuItem5.setOnAction(ePlayerShots -> {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION,"");
-            alert.setHeaderText("My Shot History");
-            alert.setTitle("Shot History");
             StringBuilder myShots = new StringBuilder();
             if(playerHistory.isEmpty()){
                 myShots = new StringBuilder("You haven't shot yet");
@@ -348,15 +340,12 @@ public class GameBoardController {
                     myShots.append("(").append(shotCell.x).append(".").append(shotCell.y).append(")").append(": Hit ").append(shotCell.ship.shipType).append("\n");
                 }
             }
-            alert.setContentText(myShots.toString());
-            alert.showAndWait();
+            infoBox(myShots.toString(), "My Shot History");
+
         });
 
         //show enemy last 5 shots
         menuItem6.setOnAction(eEnemyShots -> {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION,"");
-            alert.setHeaderText("Enemy Shot History");
-            alert.setTitle("Shot History");
             StringBuilder enemyShots = new StringBuilder();
             if(enemyHistory.isEmpty()){
                 enemyShots = new StringBuilder("Enemy hasn't shot yet");
@@ -368,8 +357,7 @@ public class GameBoardController {
                     enemyShots.append("(").append(shotCell.x).append(".").append(shotCell.y).append(")").append(": Hit ").append(shotCell.ship.shipType).append("\n");
                 }
             }
-            alert.setContentText(enemyShots.toString());
-            alert.showAndWait();
+            infoBox(enemyShots.toString(), "Enemy Shot History");
         });
 
         // POPULATE LEFT VBOX //
