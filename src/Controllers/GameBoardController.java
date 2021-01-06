@@ -23,6 +23,7 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -117,7 +118,7 @@ public class GameBoardController {
         // TOP TOOLBAR //
 
         ToolBar toolbar = new ToolBar();
-        toolbar.setStyle("-fx-min-width: 1520");
+        toolbar.setStyle("-fx-min-width: 1500");
         root.setTop(toolbar);
 
         // SET TOOLBAR FIELDS //
@@ -191,7 +192,7 @@ public class GameBoardController {
 
         Text gameInstructions = new Text("The ships above consist of your entire fleet. To place them on your board you can click with either left click or right click." +
                                      " If you left click a cell, the ship in queue will be placed vertically starting from that cell. If you right click instead, the ship will be placed horizontally. "  +
-                                     " The ships are chosen in the order above.");
+                                     " The ships are chosen in the order above (starting from the carrier).");
         gameInstructions.setStyle("-fx-text-alignment: justify;" + "fx-font-size: 15");
         gameInstructions.setWrappingWidth(200);
         Text plTurns = new Text(" \n Player Turns Remaining");
@@ -257,7 +258,7 @@ public class GameBoardController {
                     event.consume();
                 }
                 else {
-                    cleanup();
+                    close();
                     try {
                         restart();
                     } catch (Exception e) {
@@ -270,13 +271,15 @@ public class GameBoardController {
         menuItem2.setOnAction(event -> { //load scenario
             TextInputDialog scenarioText = new TextInputDialog();
             scenarioText.setHeaderText("Please enter the scenario name");
-            scenarioText.showAndWait();
-            scenarioID = scenarioText.getEditor().getText();
-            try {
-                scenarioLoadPlayer(txt2,txt8,txt14, txt12);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            Optional<String> result = scenarioText.showAndWait();
+                    if (result.isPresent()) {
+                        scenarioID = scenarioText.getEditor().getText();
+                        try {
+                            scenarioLoadPlayer(txt2, txt8, txt14, txt12);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                 });
 
 
@@ -291,7 +294,7 @@ public class GameBoardController {
                     event.consume();
                 }
                 else {
-                    cleanup();
+                    close();
                 }
             });
         });
@@ -338,11 +341,11 @@ public class GameBoardController {
             if(playerHistory.isEmpty()){
                 myShots = new StringBuilder("You haven't shot yet");
             }
-            for (Cell tmpCell : playerHistory) {
-                if (tmpCell.ship == null) {
-                    myShots.append("(").append(tmpCell.x).append(".").append(tmpCell.y).append(")").append(": Miss \n");
+            for (Cell shotCell : playerHistory) {
+                if (shotCell.ship == null) {
+                    myShots.append("(").append(shotCell.x).append(".").append(shotCell.y).append(")").append(": Miss \n");
                 } else {
-                    myShots.append("(").append(tmpCell.x).append(".").append(tmpCell.y).append(")").append(": Hit ").append(tmpCell.ship.shipType).append("\n");
+                    myShots.append("(").append(shotCell.x).append(".").append(shotCell.y).append(")").append(": Hit ").append(shotCell.ship.shipType).append("\n");
                 }
             }
             alert.setContentText(myShots.toString());
@@ -358,11 +361,11 @@ public class GameBoardController {
             if(enemyHistory.isEmpty()){
                 enemyShots = new StringBuilder("Enemy hasn't shot yet");
             }
-            for (Cell tmpCell : enemyHistory) {
-                if (tmpCell.ship == null) {
-                    enemyShots.append("(").append(tmpCell.x).append(".").append(tmpCell.y).append(")").append(": Miss \n");
+            for (Cell shotCell : enemyHistory) {
+                if (shotCell.ship == null) {
+                    enemyShots.append("(").append(shotCell.x).append(".").append(shotCell.y).append(")").append(": Miss \n");
                 } else {
-                    enemyShots.append("(").append(tmpCell.x).append(".").append(tmpCell.y).append(")").append(": Hit ").append(tmpCell.ship.shipType).append("\n");
+                    enemyShots.append("(").append(shotCell.x).append(".").append(shotCell.y).append(")").append(": Hit ").append(shotCell.ship.shipType).append("\n");
                 }
             }
             alert.setContentText(enemyShots.toString());
@@ -381,8 +384,42 @@ public class GameBoardController {
         // ENEMY BOARD //
 
         enemyBoard = new Board(true, event -> {
-            if (!running)
+            if (!running )
                 return;
+
+            if(myShots==40){
+                if (enemyShots < 40) {
+                    while (enemyShots < 40) {
+                        enemyTurn = true;
+                        enemyMove(txt2, txt8, txt14, txt12);
+                    }
+                    if (enemyBoard.ships == 0 || myScore > enemyScore) {
+                        System.out.println("YOU WIN");
+                        infoBox("You won!", "What a victory!");
+                        running = false;
+                    }
+                    else if (playerBoard.ships == 0 || myScore < enemyScore) {
+                        System.out.println("YOU LOSE");
+                        infoBox("You lost!", "Bad Luck!");
+                        running = false;
+                    }
+                    return;
+                }
+                else if (enemyShots==40){
+                    txt13.setText("0");
+                    if (enemyBoard.ships == 0 || myScore > enemyScore) {
+                        System.out.println("YOU WIN");
+                        infoBox("You won!", "What a victory!");
+                        running = false;
+                    }
+                    if (enemyBoard.ships == 0 || myScore < enemyScore) {
+                        System.out.println("YOU LOSE");
+                        infoBox("You lost!", "Bad Luck!");
+                        running = false;
+                    }
+                }
+
+            }
 
             Cell cell = (Cell) event.getSource();
             if (cell.wasShot) {
@@ -404,7 +441,7 @@ public class GameBoardController {
             }
             playerHistory.add(cell);
 
-            if (enemyBoard.ships == 0 ||  ((myShots==40 || enemyShots==40) && myScore>enemyScore )) {
+            if (enemyBoard.ships == 0 ||  ((myShots==40 && enemyShots==40) && myScore>enemyScore )) {
                 System.out.println("YOU WIN");
                 infoBox("You won!", "What a victory!");
                 running = false;
@@ -481,13 +518,14 @@ public class GameBoardController {
     // ENEMY PLAYSTYLE //
 
     private void enemyMove(TextField shipText, TextField scoreText, TextField shotsText, TextField percText) {
-        while (enemyTurn) {
+        while (enemyTurn && enemyShots<40) {
             int x = random.nextInt(10); //shoot
             int y = random.nextInt(10);
 
             Cell cell = playerBoard.getCell(x, y);
             if (cell.wasShot)
                 continue;
+
 
             enemyTurn = cell.shoot();
 
@@ -507,7 +545,7 @@ public class GameBoardController {
             enemyHistory.add(cell);
 
             //loss
-            if (playerBoard.ships == 0 ||  ((myShots==40 || enemyShots==40) && myScore<enemyScore )) {
+            if (playerBoard.ships == 0 ||  ((myShots==40 && enemyShots==40) && myScore<enemyScore )) {
                 System.out.println("YOU LOSE");
                 infoBox("You lost!", "Bad Luck!");
                 running = false;
@@ -660,14 +698,14 @@ public class GameBoardController {
 
     // INITIALIZE SCREEN TO EARLY STATE //
 
-    private void cleanup() {
+    private void close() {
         thisStage.close();
     }
 
     // GAME RESTARTS //
 
     private void restart() throws Exception {
-        cleanup();
+        close();
         Main app = new Main();
         app.start(new Stage());
     }
