@@ -375,68 +375,33 @@ public class GameBoardController {
             if (!running )
                 return;
 
-            if(myShots==40){
-                if (enemyShots < 40) {
-                    while (enemyShots < 40) {
-                        enemyTurn = true;
-                        enemyMove(txt2, txt8, txt14, txt12);
-                    }
-                    if (enemyBoard.ships == 0 || myScore > enemyScore) {
-                        System.out.println("YOU WIN");
-                        infoBox("You won!", "What a victory!");
-                        running = false;
-                    }
-                    else if (playerBoard.ships == 0 || myScore < enemyScore) {
-                        System.out.println("YOU LOSE");
-                        infoBox("You lost!", "Bad Luck!");
-                        running = false;
-                    }
+                Cell cell = (Cell) event.getSource();
+                if (cell.wasShot) {
                     return;
                 }
-                else if (enemyShots==40){
-                    txt13.setText("0");
-                    if (enemyBoard.ships == 0 || myScore > enemyScore) {
-                        System.out.println("YOU WIN");
-                        infoBox("You won!", "What a victory!");
-                        running = false;
-                    }
-                    if (enemyBoard.ships == 0 || myScore < enemyScore) {
-                        System.out.println("YOU LOSE");
-                        infoBox("You lost!", "Bad Luck!");
-                        running = false;
-                    }
+
+                enemyTurn = !cell.shoot();
+
+                myShots = myShots + 1;
+                myScore = myScore + cell.highscore;
+                myKill = myKill + cell.perc;
+                myPerc = (float) (((myKill) * 100) / myShots);
+                txt4.setText(String.valueOf(enemyBoard.ships));
+                txt6.setText(String.valueOf(myScore));
+                txt10.setText(String.valueOf(myPerc));
+                txt13.setText(String.valueOf(40 - myShots));
+
+
+                if (playerHistory.size() == 5) {
+                    playerHistory.remove(0);
                 }
+                playerHistory.add(cell);
 
-            }
+                enemyTurn = true;
+                winConditionCheck();
 
-            Cell cell = (Cell) event.getSource();
-            if (cell.wasShot) {
-                return;
-            }
-
-            enemyTurn = !cell.shoot();
-            myShots= myShots+1;
-            myScore= myScore + cell.highscore;
-            myKill=myKill+cell.perc;
-            myPerc =(float) (((myKill)*100) / myShots);
-            txt4.setText(String.valueOf(enemyBoard.ships));
-            txt6.setText(String.valueOf(myScore));
-            txt10.setText(String.valueOf(myPerc));
-            txt13.setText(String.valueOf(40-myShots));
-
-            if (playerHistory.size() == 5) {
-                playerHistory.remove(0);
-            }
-            playerHistory.add(cell);
-
-            if (enemyBoard.ships == 0 ||  ((myShots==40 && enemyShots==40) && myScore>enemyScore )) {
-                System.out.println("YOU WIN");
-                infoBox("You won!", "What a victory!");
-                running = false;
-            }
-
-            if (enemyTurn)
-                enemyMove(txt2,txt8,txt14, txt12);
+                if (enemyTurn)
+                    enemyMove(txt2, txt8, txt14, txt12);
         });
 
         // PLAYER BOARD //
@@ -506,7 +471,7 @@ public class GameBoardController {
     // ENEMY PLAYSTYLE //
 
     private void enemyMove(TextField shipText, TextField scoreText, TextField shotsText, TextField percText) {
-        while (enemyTurn && enemyShots<40) {
+        while (enemyTurn) {
             int x = random.nextInt(10); //shoot
             int y = random.nextInt(10);
 
@@ -526,18 +491,14 @@ public class GameBoardController {
             shotsText.setText(String.valueOf(40-enemyShots));
             shipText.setText(String.valueOf(playerBoard.ships));
             percText.setText(String.valueOf(enPerc));
+            winConditionCheck();
 
             if (enemyHistory.size() == 5) {
                 enemyHistory.remove(0);
             }
             enemyHistory.add(cell);
 
-            //loss
-            if (playerBoard.ships == 0 ||  ((myShots==40 && enemyShots==40) && myScore<enemyScore )) {
-                System.out.println("YOU LOSE");
-                infoBox("You lost!", "Bad Luck!");
-                running = false;
-            }
+            enemyTurn = false;
         }
     }
 
@@ -659,6 +620,20 @@ public class GameBoardController {
         }
 
         running = true;
+    }
+
+    private void winConditionCheck(){
+        if (playerBoard.ships == 0 ||  ((myShots==40 && enemyShots==40) && myScore<enemyScore )) {
+            System.out.println("YOU LOSE");
+            infoBox("You lost!", "Bad Luck!");
+            enemyTurn=false;
+            running = false;
+        } else if (enemyBoard.ships == 0 ||  ((myShots==40 && enemyShots==40) && myScore>enemyScore )) {
+            System.out.println("YOU WIN");
+            infoBox("You won!", "What a victory!");
+            enemyTurn=false;
+            running = false;
+        }
     }
 
     // PLAY BUTTON //
