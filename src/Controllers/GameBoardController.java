@@ -40,6 +40,8 @@ public class GameBoardController {
 
     private Random random = new Random();
 
+    private boolean flag=true;
+
     private int[] length = new int[5];
     private int[] hitScores = new int[5];
     private int[] sinkScores = new int[5];
@@ -57,6 +59,12 @@ public class GameBoardController {
 
     private ArrayList<Cell> playerHistory = new ArrayList<>(5);
     private ArrayList<Cell> enemyHistory = new ArrayList<>(5);
+
+    private ArrayList<Cell> shot = new ArrayList<>(1);
+    private int[] cX = new int[4];
+    private int[] cY = new int[4];
+
+    private ArrayList<Cell> cellNears = new ArrayList<>(5);
 
     private String scenarioID;
     private File scenario;
@@ -471,34 +479,107 @@ public class GameBoardController {
 
     private void enemyMove(TextField shipText, TextField scoreText, TextField shotsText, TextField percText) {
         while (enemyTurn) {
-            int x = random.nextInt(10); //shoot
-            int y = random.nextInt(10);
 
-            Cell cell = playerBoard.getCell(x, y);
-            if (cell.wasShot)
-                continue;
+                int[] xy = shootNear(flag);
+                int x = xy[0];
+                int y = xy[1];
+
+                Cell cell = playerBoard.getCell(x, y);
+                if (cell.wasShot) {
+                    flag=false;
+                    continue;
+                }
 
 
-            enemyTurn = cell.shoot();
+                enemyTurn = cell.shoot();
+                flag=true;
 
-            //enemy variables
-            enemyScore=enemyScore + cell.highscore;
-            enemyShots= enemyShots+1;
-            enKill=enKill+cell.perc;
-            float enPerc = (float) (((enKill) * 100) / enemyShots);
-            scoreText.setText(String.valueOf(enemyScore));
-            shotsText.setText(String.valueOf(40-enemyShots));
-            shipText.setText(String.valueOf(playerBoard.ships));
-            percText.setText(String.valueOf(enPerc));
-            winConditionCheck();
+                //enemy variables
+                enemyScore = enemyScore + cell.highscore;
+                enemyShots = enemyShots + 1;
+                enKill = enKill + cell.perc;
+                float enPerc = (float) (((enKill) * 100) / enemyShots);
+                scoreText.setText(String.valueOf(enemyScore));
+                shotsText.setText(String.valueOf(40 - enemyShots));
+                shipText.setText(String.valueOf(playerBoard.ships));
+                percText.setText(String.valueOf(enPerc));
 
-            if (enemyHistory.size() == 5) {
-                enemyHistory.remove(0);
-            }
-            enemyHistory.add(cell);
+                winConditionCheck();
 
-            enemyTurn = false;
+                if (enemyHistory.size() == 5) {
+                    enemyHistory.remove(0);
+                }
+                enemyHistory.add(cell);
+
+                if(shot.size()==1){
+                    shot.remove(0);
+                }
+                shot.add(cell);
+            System.out.println(cellNears.size());
+
+                enemyTurn = false;
+
         }
+    }
+
+
+    // AI //
+
+    private int[] shootNear(boolean f){
+        int x=0,y=0;
+        if ((shot.size() == 0 || shot.get(0).ship == null || !f) &&cellNears.size()==0) {
+             x = random.nextInt(10); //shoot
+             y = random.nextInt(10);
+        }
+        else if(shot.get(0).ship != null && cellNears.size()==0) {
+
+            cellNears.add(shot.get(0));
+            int tmpx = cellNears.get(0).x;
+            int tmpy = cellNears.get(0).y;
+
+            cX[0] = tmpx + 1;
+            cY[0] = tmpy;
+            cX[1] = tmpx - 1;
+            cY[1] = tmpy;
+            cX[2] = tmpx;
+            cY[2] = tmpy + 1;
+            cX[3] = tmpx;
+            cY[3] = tmpy - 1;
+
+            x = cX[0];
+            y = cY[0];
+            Cell cell1 = playerBoard.getCell(x, y);
+            cellNears.add(cell1);
+
+            if(x<0 || x>9 || y<0 || y>9){
+                x = random.nextInt(10); //shoot
+                y = random.nextInt(10);
+            }
+        }
+        else if(cellNears.size()==2){
+            x = cX[1];
+            y = cY[1];
+            Cell cell2 = playerBoard.getCell(x, y);
+            cellNears.add(cell2);
+        }
+        else if(cellNears.size()==3){
+            x = cX[2];
+            y = cY[2];
+            Cell cell3 = playerBoard.getCell(x, y);
+            cellNears.add(cell3);
+        }
+        else if(cellNears.size()==4){
+            x = cX[3];
+            y = cY[3];
+            Cell cell4 = playerBoard.getCell(x, y);
+            cellNears.add(cell4);
+        }
+        else if(cellNears.size()==5){
+            cellNears.clear();
+            x = random.nextInt(10); //shoot
+            y = random.nextInt(10);
+        }
+            return new int[] {x, y};
     }
 
     // PLACE ENEMY SHIPS. THEN GAME STARTS //
@@ -620,6 +701,8 @@ public class GameBoardController {
 
         running = true;
     }
+
+    // CHECK WHO WON //
 
     private void winConditionCheck(){
         if (playerBoard.ships == 0 ||  ((myShots==40 && enemyShots==40) && myScore<enemyScore )) {
