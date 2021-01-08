@@ -300,7 +300,7 @@ public class GameBoardController {
             if (result.isPresent()) {
                 scenarioID = scenarioText.getEditor().getText();
                 try {
-                    scenarioLoadPlayer(txt2, txt8, txt14, txt12);
+                    scenarioLoadPlayer(txt2, txt8, txt14, txt12, carrier, battleship, cruiser, submarine, destroyer);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -509,12 +509,14 @@ public class GameBoardController {
 
             Cell cell = playerBoard.getCell(x, y);
             if (cell.wasShot) {
+                System.out.println(cellNears.size());
                 flag = false;
                 continue;
             }
 
 
             enemyTurn = cell.shoot();
+            System.out.println(cellNears.size());
             flag = true;
 
             //enemy variables
@@ -538,7 +540,7 @@ public class GameBoardController {
                 shot.remove(0);
             }
             shot.add(cell);
-            System.out.println(cellNears.size());
+           // System.out.println(cellNears.size());
 
             enemyTurn = false;
 
@@ -618,11 +620,11 @@ public class GameBoardController {
             }
             Cell cell3 = playerBoard.getCell(x, y);
             cellNears.add(cell3);
-             if(cell3.wasShot){
+          /*  if(cell3.wasShot){
                 x = cX[3];
                 y = cY[3];
                 cellNears.add(shot.get(0));
-            }
+            } */
             if(cell3.ship != null){
                 cellNears.clear();
             }
@@ -696,9 +698,14 @@ public class GameBoardController {
      * @param shipText text to update the player's ship amount
      * @param scoreText text to update the enemy's score amount
      * @param shotsText text to update the enemy's shots amount
-     * @param percText text to update the enmemy's accuracy percentage
+     * @param percText text to update the enemy's accuracy percentage
+     * @param carrier text to update the player's carrier amount
+     * @param battleship text to update the player's battleship amount
+     * @param cruiser text to update the player's cruiser amount
+     * @param submarine text to update the player's submarine amount
+     * @param destroyer text to update the player's destroyer amount
      */
-    private void scenarioLoadPlayer(TextField shipText, TextField scoreText, TextField shotsText, TextField percText) {
+    private void scenarioLoadPlayer(TextField shipText, TextField scoreText, TextField shotsText, TextField percText, TextField carrier, TextField battleship, TextField cruiser, TextField submarine, TextField destroyer) {
         if (scenarioID == null) {
             System.out.println("Error. File not found");
             Alert alert = new Alert(Alert.AlertType.WARNING, "Error. Scenario not found!");
@@ -722,6 +729,11 @@ public class GameBoardController {
                     Cell cell = playerBoard.getCell(coordinateX, coordinateY);
                     if (playerBoard.placeShip(new Ship(length[type], verticalCheck, hitScores[type], sinkScores[type], names[type]), cell.x, cell.y)) {
                         count++;
+                        carrier.setText("0");
+                        battleship.setText("0");
+                        cruiser.setText("0");
+                        submarine.setText("0");
+                        destroyer.setText("0");
                         if (count > 4) {
                             enemyScenarioLoad(shipText, scoreText, shotsText, percText);
                         }
@@ -752,7 +764,7 @@ public class GameBoardController {
      * @param shipText text to update the player's ship amount
      * @param scoreText text to update the enemy's score amount
      * @param shotsText text to update the enemy's shots amount
-     * @param percText text to update the enmemy's accuracy percentage
+     * @param percText text to update the enemy's accuracy percentage
      * @throws InvalidCountException Exception thrown in case of a wrong amount of ships placed by the enemy
      */
     private void enemyScenarioLoad(TextField shipText, TextField scoreText, TextField shotsText, TextField percText) throws InvalidCountException {
