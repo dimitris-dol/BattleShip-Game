@@ -17,7 +17,7 @@ public class Ship extends Parent {
     public int SinkBonus;
     public String shipType;
 
-    private int health;
+    public int health;
 
     /**
      *

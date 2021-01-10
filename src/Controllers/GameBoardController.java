@@ -22,10 +22,7 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * <p>Controller class of the main game</p>
@@ -39,15 +36,12 @@ public class GameBoardController {
     // DECLARATIONS //
 
     private boolean running = false;
+
     private Board enemyBoard, playerBoard;
 
     private int shipsPlaced = 0;
-
     private boolean enemyTurn = true;
-
     private Random random = new Random();
-
-    private boolean flag = true;
 
     private int[] length = new int[5];
     private int[] hitScores = new int[5];
@@ -56,22 +50,20 @@ public class GameBoardController {
 
     private int enemyScore = 0;
     private int myScore = 0;
-
     private int myShots = 0;
     private int enemyShots = 0;
-
     private int myKill = 0;
     private int enKill = 0;
     private float myPerc = 0;
 
     private ArrayList<Cell> playerHistory = new ArrayList<>(5);
     private ArrayList<Cell> enemyHistory = new ArrayList<>(5);
-
     private ArrayList<Cell> shot = new ArrayList<>(1);
-    private int[] cX = new int[4];
-    private int[] cY = new int[4];
-
     private ArrayList<Cell> cellNears = new ArrayList<>(5);
+    private ArrayList<Cell> shootLeft = new ArrayList<>();
+    private ArrayList<Cell> shootRight = new ArrayList<>();
+    private ArrayList<Cell> shootUp = new ArrayList<>();
+    private ArrayList<Cell> shootDown = new ArrayList<>();
 
     private String scenarioID;
     private File scenario;
@@ -439,7 +431,7 @@ public class GameBoardController {
                 }
             }
             if (shipsPlaced == 1) {
-                if (playerBoard.placeShip(new Ship(length[shipsPlaced], event.getButton() == MouseButton.PRIMARY, hitScores[shipsPlaced - 1], sinkScores[shipsPlaced], names[shipsPlaced]), cell.x, cell.y)) {
+                if (playerBoard.placeShip(new Ship(length[shipsPlaced], event.getButton() == MouseButton.PRIMARY, hitScores[shipsPlaced ], sinkScores[shipsPlaced], names[shipsPlaced]), cell.x, cell.y)) {
                     battleship.setText("0");
                     ++shipsPlaced;
                 }
@@ -503,21 +495,26 @@ public class GameBoardController {
     private void enemyMove(TextField shipText, TextField scoreText, TextField shotsText, TextField percText) {
         while (enemyTurn) {
 
-            int[] xy = shootNear(flag);
+            int[] xy = shootNear();
             int x = xy[0];
             int y = xy[1];
 
             Cell cell = playerBoard.getCell(x, y);
             if (cell.wasShot) {
                 System.out.println(cellNears.size());
-                flag = false;
                 continue;
             }
 
 
             enemyTurn = cell.shoot();
-            System.out.println(cellNears.size());
-            flag = true;
+            if(enemyTurn && !cell.ship.isAlive()){
+                NExt = false;
+                NextFirst.clear();
+                shootDown.clear();
+                shootUp.clear();
+                shootLeft.clear();
+                shootRight.clear();
+            }
 
             //enemy variables
             enemyScore = enemyScore + cell.highscore;
@@ -555,100 +552,189 @@ public class GameBoardController {
      * whilst also checking to not trigger any exception. If there are no recent hits then the
      * AI will just randomly pick a cell and fire at it.
      *
-     * @param f this param is a flag used in order to know whether a cell has already been shot
      * @return returns the coordinates (x,y) for the next cell shot
      */
-    private int[] shootNear(boolean f) {
+
+    private int[] shootNear(){
         int x = 0, y = 0;
-        if ((shot.size() == 0 || shot.get(0).ship == null || !f) && cellNears.size() == 0) {
+        if ((shot.size() == 0 || shot.get(0).ship == null || !shot.get(0).ship.isAlive()) && !NExt) {
             x = random.nextInt(10); //shoot
             y = random.nextInt(10);
-        } else if (shot.get(0).ship != null && cellNears.size() < 2) {
-
-            cellNears.add(shot.get(0));
-            int tmpx = cellNears.get(0).x;
-            int tmpy = cellNears.get(0).y;
-
-            cX[0] = tmpx + 1;
-            cY[0] = tmpy;
-            cX[1] = tmpx - 1;
-            cY[1] = tmpy;
-            cX[2] = tmpx;
-            cY[2] = tmpy + 1;
-            cX[3] = tmpx;
-            cY[3] = tmpy - 1;
-
-            x = cX[0];
-            y = cY[0];
-            if (x > 9 || y<0 ) {
-                x = cX[1];
-                y = cY[1];
-                cellNears.add(shot.get(0));
-            }
-            Cell cell1 = playerBoard.getCell(x, y);
-            cellNears.add(cell1);
-            if(cell1.ship != null){
-                cellNears.clear();
-            }
-
-        } else if (cellNears.size() == 2) {
-            x = cX[1];
-            y = cY[1];
-            if(x<0 || y<0){
-                x = cX[2];
-                y = cY[2];
-                cellNears.add(shot.get(0));
-                if(y>9){
-                    x = cX[3];
-                    y = cY[3];
-                    cellNears.add(shot.get(0));
+        }else if (!NExt && shot.get(0).ship != null){
+            int length = shot.get(0).ship.health;
+            int tmpx = shot.get(0).x;
+            int tmpy = shot.get(0).y;
+            System.out.println("bad "+tmpx+" "+tmpy);
+            boolean Flagf = true;
+            while(length > 0){
+                if(tmpy+1<=9){
+                    if(playerBoard.getCell(tmpx,tmpy+1).wasShot){
+                        break;
+                    }
+                    shootRight.add(playerBoard.getCell(tmpx,tmpy+1));
+                    if(Flagf){
+                        NextFirst.add(shootRight.get(0));
+                        Flagf = false;
+                    }
+                    tmpy++;
+                    length--;
+                }else{
+                    break;
                 }
             }
-            Cell cell2 = playerBoard.getCell(x, y);
-            cellNears.add(cell2);
-            if(cell2.ship != null){
-                cellNears.clear();
+            length = shot.get(0).ship.health;
+            tmpx = shot.get(0).x;
+            tmpy = shot.get(0).y;
+            Flagf = true;
+            while(length > 0){
+                if(tmpy-1>=0){
+                    if(playerBoard.getCell(tmpx,tmpy-1).wasShot){
+                        break;
+                    }
+                    shootLeft.add(playerBoard.getCell(tmpx,tmpy-1));
+                    if(Flagf){
+                        NextFirst.add(shootLeft.get(0));
+                        Flagf = false;
+                    }
+                    tmpy--;
+                    length--;
+                }else{
+                    break;
+                }
             }
-
-        } else if (cellNears.size() == 3) {
-            x = cX[2];
-            y = cY[2];
-            if(y>9){
-                x = cX[3];
-                y = cY[3];
-                cellNears.add(shot.get(0));
+            length = shot.get(0).ship.health;
+            tmpx = shot.get(0).x;
+            tmpy = shot.get(0).y;
+            Flagf = true;
+            while(length > 0){
+                if(tmpx+1<=9){
+                    if(playerBoard.getCell(tmpx+1,tmpy).wasShot){
+                        break;
+                    }
+                    shootUp.add(playerBoard.getCell(tmpx+1,tmpy));
+                    if(Flagf){
+                        NextFirst.add(shootUp.get(0));
+                        Flagf = false;
+                    }
+                    tmpx++;
+                    length--;
+                }else{
+                    break;
+                }
             }
-            Cell cell3 = playerBoard.getCell(x, y);
-            cellNears.add(cell3);
-          /*  if(cell3.wasShot){
-                x = cX[3];
-                y = cY[3];
-                cellNears.add(shot.get(0));
-            } */
-            if(cell3.ship != null){
-                cellNears.clear();
+            length = shot.get(0).ship.health;
+            tmpx = shot.get(0).x;
+            tmpy = shot.get(0).y;
+            Flagf = true;
+            while(length > 0){
+                if(tmpx-1>=0){
+                    if(playerBoard.getCell(tmpx-1,tmpy).wasShot){
+                        break;
+                    }
+                    shootDown.add(playerBoard.getCell(tmpx-1,tmpy));
+                    if(Flagf){
+                        NextFirst.add(shootDown.get(0));
+                        Flagf = false;
+                    }
+                    tmpx--;
+                    length--;
+                }else{
+                    break;
+                }
             }
-
-        } else if (cellNears.size() == 4) {
-            x = cX[3];
-            y = cY[3];
-            if(y<0 || x<0 ||x>9){
-                cellNears.add(shot.get(0));
-                x = random.nextInt(10); //shoot
-                y = random.nextInt(10);
-            }
-            Cell cell4 = playerBoard.getCell(x, y);
-            cellNears.add(cell4);
-            if(cell4.ship != null){
-                cellNears.clear();
-            }
-
-        } else if (cellNears.size() > 4) {
-            cellNears.clear();
-            cellNears.add(shot.get(0));
+            Collections.shuffle(NextFirst);
+            NExt = true;
+            x = NextFirst.get(0).x;
+            y = NextFirst.get(0).y;
+            NextFirst.remove(0);
+            System.out.println("good + "+x+" "+y);
         }
-        return new int[]{x, y};
+        else if (NExt){
+            if(shot.get(0).ship==null && NextFirst.isEmpty()){
+                if(shootRight.contains(shot.get(0))){
+                    shootRight.clear();
+                    x = shootLeft.get(0).x;
+                    y = shootLeft.get(0).y;
+                }
+                if(shootLeft.contains(shot.get(0))){
+                    shootLeft.clear();
+                    x = shootRight.get(0).x;
+                    y = shootRight.get(0).y;
+                }
+                if(shootUp.contains(shot.get(0))){
+                    shootUp.clear();
+                    x = shootDown.get(0).x;
+                    y = shootDown.get(0).y;
+                }
+                if(shootDown.contains(shot.get(0))){
+                    shootDown.clear();
+                    x = shootUp.get(0).x;
+                    y = shootUp.get(0).y;
+                }
+            }else if(shot.get(0).ship==null && !NextFirst.isEmpty()){
+                x =  NextFirst.get(0).x;
+                y =  NextFirst.get(0).y;
+                NextFirst.remove(0);
+            }
+            else{
+                NextFirst.clear();
+                if(shootRight.contains(shot.get(0))){
+                    shootDown.clear();
+                    shootUp.clear();
+                    shootRight.remove(0);
+                    if(shootRight.isEmpty()){
+                        x = shootLeft.get(0).x;
+                        y = shootLeft.get(0).y;
+                    }else{
+                        x = shootRight.get(0).x;
+                        y = shootRight.get(0).y;
+                    }
+                }
+                if(shootLeft.contains(shot.get(0))){
+                    shootDown.clear();
+                    shootUp.clear();
+                    shootLeft.remove(0);
+                    if(shootLeft.isEmpty()){
+                        x = shootRight.get(0).x;
+                        y = shootRight.get(0).y;
+                    }else{
+                        x = shootLeft.get(0).x;
+                        y = shootLeft.get(0).y;
+                    }
+                }
+                if(shootUp.contains(shot.get(0))){
+                    shootLeft.clear();
+                    shootRight.clear();
+                    shootUp.remove(0);
+                    if(shootUp.isEmpty()){
+                        x = shootDown.get(0).x;
+                        y = shootDown.get(0).y;
+                    }else{
+                        x = shootUp.get(0).x;
+                        y = shootUp.get(0).y;
+                    }
+                }
+                if(shootDown.contains(shot.get(0))){
+                    shootLeft.clear();
+                    shootRight.clear();
+                    shootDown.remove(0);
+                    if(shootDown.isEmpty()){
+                        x = shootUp.get(0).x;
+                        y = shootUp.get(0).y;
+                    }else{
+                        x = shootDown.get(0).x;
+                        y = shootDown.get(0).y;
+                    }
+                }
+            }
+        }
+        System.out.println(x+" "+y);
+        return new int[] {x,y};
     }
+
+
+    private ArrayList<Cell> NextFirst = new ArrayList<>();
+    private boolean NExt = false;
 
     // PLACE ENEMY SHIPS. THEN GAME STARTS //
 
@@ -741,7 +827,7 @@ public class GameBoardController {
                         System.out.println("Error with ship" + names[type]);
                         Alert alert = new Alert(Alert.AlertType.WARNING, "Error with friendly ship: " + names[type] + ". Please load a working scenario!");
                         alert.showAndWait();
-                        restart();
+                        running=false;
                     }
                 }
             } catch (FileNotFoundException | InvalidCountException e) {
@@ -769,7 +855,7 @@ public class GameBoardController {
      */
     private void enemyScenarioLoad(TextField shipText, TextField scoreText, TextField shotsText, TextField percText) throws InvalidCountException {
         // place enemy ships
-        int count = 0;
+
 
         if (scenarioID == null) {
             System.out.println("Error");
@@ -788,13 +874,11 @@ public class GameBoardController {
                     boolean verticalCheck = (vertical == 2);
                     System.out.println(type + " " + coordinateX + " " + coordinateY + " " + vertical);
                     Cell cell = enemyBoard.getCell(coordinateX, coordinateY);
-                    if (enemyBoard.placeShip(new Ship(length[type], verticalCheck, hitScores[type], sinkScores[type], names[type]), cell.x, cell.y)) {
-                        count++;
-                    } else {
+                    if (!enemyBoard.placeShip(new Ship(length[type], verticalCheck, hitScores[type], sinkScores[type], names[type]), cell.x, cell.y)) {
                         System.out.println("Error with ship" + names[type]);
                         Alert alert = new Alert(Alert.AlertType.WARNING, "Error with enemy ship: " + names[type] + ". Please load a working scenario!");
                         alert.showAndWait();
-                        restart();
+                        running=false;
                     }
                 }
             } catch (FileNotFoundException e) {
@@ -804,6 +888,13 @@ public class GameBoardController {
             } catch (Exception ee) {
                 ee.printStackTrace();
             }
+        }
+
+        if (enemyTurn()) {
+            infoBox("You go second!", "Unlucky, sir!");
+            enemyMove(shipText, scoreText, shotsText, percText);
+        } else {
+            infoBox("You go first!", "We got the upper hand!");
         }
 
         running = true;
@@ -825,6 +916,12 @@ public class GameBoardController {
         } else if (enemyBoard.ships == 0 || ((myShots == 40 && enemyShots == 40) && myScore > enemyScore)) {
             System.out.println("YOU WIN");
             infoBox("You won!", "What a victory!");
+            enemyTurn = false;
+            running = false;
+        }
+        else if(myShots == 40 && enemyShots == 40){
+            System.out.println("DRAW");
+            infoBox("This battle is a draw", "Draw..");
             enemyTurn = false;
             running = false;
         }
