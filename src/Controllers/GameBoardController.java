@@ -59,7 +59,6 @@ public class GameBoardController {
     private ArrayList<Cell> playerHistory = new ArrayList<>(5);
     private ArrayList<Cell> enemyHistory = new ArrayList<>(5);
     private ArrayList<Cell> shot = new ArrayList<>(1);
-    private ArrayList<Cell> cellNears = new ArrayList<>(5);
     private ArrayList<Cell> shootLeft = new ArrayList<>();
     private ArrayList<Cell> shootRight = new ArrayList<>();
     private ArrayList<Cell> shootUp = new ArrayList<>();
@@ -501,7 +500,6 @@ public class GameBoardController {
 
             Cell cell = playerBoard.getCell(x, y);
             if (cell.wasShot) {
-                System.out.println(cellNears.size());
                 continue;
             }
 
@@ -564,7 +562,7 @@ public class GameBoardController {
             int length = shot.get(0).ship.health;
             int tmpx = shot.get(0).x;
             int tmpy = shot.get(0).y;
-            System.out.println("bad "+tmpx+" "+tmpy);
+         //   System.out.println("bad "+tmpx+" "+tmpy);
             boolean Flagf = true;
             while(length > 0){
                 if(tmpy+1<=9){
@@ -647,7 +645,7 @@ public class GameBoardController {
             x = NextFirst.get(0).x;
             y = NextFirst.get(0).y;
             NextFirst.remove(0);
-            System.out.println("good + "+x+" "+y);
+        //    System.out.println("good + "+x+" "+y);
         }
         else if (NExt){
             if(shot.get(0).ship==null && NextFirst.isEmpty()){
@@ -728,7 +726,7 @@ public class GameBoardController {
                 }
             }
         }
-        System.out.println(x+" "+y);
+   //     System.out.println(x+" "+y);
         return new int[] {x,y};
     }
 

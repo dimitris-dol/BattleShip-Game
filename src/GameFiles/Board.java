@@ -27,7 +27,7 @@ import static jdk.nashorn.internal.runtime.Context.printStackTrace;
  */
 public class Board extends Parent {
     private VBox rows = new VBox();
-    private boolean enemy;
+    private boolean isEnemy;
     public int ships = 5;
 
     public ArrayList<Ship> Ships = new ArrayList<>();
@@ -36,11 +36,11 @@ public class Board extends Parent {
      *  The main Board method that allows the creation of the 4 total boards,
      *  2 per player.
      *
-     * @param enemy the boolean value that checks if the current board is for the player or the enemy
+     * @param isEnemy the boolean value that checks if the current board is for the player or the enemy
      * @param handler handles the click-event for when the player shoots or places their ships
      */
-    public Board(boolean enemy, EventHandler<? super MouseEvent> handler) {
-        this.enemy = enemy;
+    public Board(boolean isEnemy, EventHandler<? super MouseEvent> handler) {
+        this.isEnemy = isEnemy;
         for (int y = 0; y < 10; y++) {
             HBox row = new HBox();
             for (int x = 0; x < 10; x++) {
@@ -65,13 +65,13 @@ public class Board extends Parent {
      */
     public boolean placeShip(Ship ship, int x, int y) {
             if (canPlaceShip(ship, x, y)) {
-                int length = ship.type;
+                int length = ship.length;
 
                 if (ship.vertical) {
                     for (int i = y; i < y + length; i++) {
                         Cell cell = getCell(x, i);
                         cell.ship = ship;
-                        if (!enemy) {
+                        if (!isEnemy) {
                             switch (ship.shipType) {
                                 case "Carrier":
                                     cell.setFill(Color.LIGHTBLUE);
@@ -82,12 +82,12 @@ public class Board extends Parent {
                                     cell.setStroke(Color.ORANGERED);
                                     break;
                                 case "Cruiser":
-                                    cell.setFill(Color.GOLD);
-                                    cell.setStroke(Color.ORANGE);
-                                    break;
-                                case "Submarine":
                                     cell.setFill(Color.SANDYBROWN);
                                     cell.setStroke(Color.BROWN);
+                                    break;
+                                case "Submarine":
+                                    cell.setFill(Color.GOLD);
+                                    cell.setStroke(Color.ORANGE);
                                     break;
                                 default:
                                     cell.setFill(Color.LIGHTGREEN);
@@ -101,7 +101,7 @@ public class Board extends Parent {
                     for (int i = x; i < x + length; i++) {
                         Cell cell = getCell(i, y);
                         cell.ship = ship;
-                        if (!enemy) {
+                        if (!isEnemy) {
                             switch (ship.shipType) {
                                 case "Carrier":
                                     cell.setFill(Color.LIGHTBLUE);
@@ -112,12 +112,12 @@ public class Board extends Parent {
                                     cell.setStroke(Color.ORANGERED);
                                     break;
                                 case "Cruiser":
-                                    cell.setFill(Color.GOLD);
-                                    cell.setStroke(Color.ORANGE);
-                                    break;
-                                case "Submarine":
                                     cell.setFill(Color.SANDYBROWN);
                                     cell.setStroke(Color.BROWN);
+                                    break;
+                                case "Submarine":
+                                    cell.setFill(Color.GOLD);
+                                    cell.setStroke(Color.ORANGE);
                                     break;
                                 default:
                                     cell.setFill(Color.LIGHTGREEN);
@@ -152,26 +152,26 @@ public class Board extends Parent {
      * @param y vertical coordinate of the cell
      * @return returns the array list of the cell's neighbors
      */
-    private Cell[] getNeighbors(int x, int y) {
-        Point2D[] points = new Point2D[] {
+    private Cell[] getNeighborCells(int x, int y) {
+        Point2D[] cells = new Point2D[] {
                 new Point2D(x - 1, y),
                 new Point2D(x + 1, y),
                 new Point2D(x, y - 1),
                 new Point2D(x, y + 1)
         };
 
-        List<Cell> neighbors = new ArrayList<>();
+        List<Cell> neighborCells = new ArrayList<>();
 
-        for (Point2D p : points) {
+        for (Point2D p : cells) {
             try{
-                isValidPoint(p);
-                neighbors.add(getCell((int)p.getX(), (int)p.getY()));
+                validPoint(p);
+                neighborCells.add(getCell((int)p.getX(), (int)p.getY()));
             }catch (OversizeException e ){
                 printStackTrace(e);
             }
         }
 
-        return neighbors.toArray(new Cell[0]);
+        return neighborCells.toArray(new Cell[0]);
     }
 
     /**
@@ -185,12 +185,12 @@ public class Board extends Parent {
      * @return returns a boolean on whether the ship placement is ok or not
      */
      private boolean canPlaceShip(Ship ship, int x, int y) {
-        int length = ship.type;
+        int length = ship.length;
 
         if (ship.vertical) {
             for (int i = y; i < y + length; i++) {
                 try {
-                    isValidPoint(x, i);
+                    isCellValid(x, i);
                     Cell cell = getCell(x, i);
                     try {
                         isCellEmpty(cell);
@@ -198,11 +198,11 @@ public class Board extends Parent {
                         return false;
                     }
 
-                    for (Cell neighbor : getNeighbors(x, i)) {
+                    for (Cell neighborCell : getNeighborCells(x, i)) {
                         try {
-                            isValidPoint(x, i);
+                            isCellValid(x, i);
                             try {
-                                isNeighborEmpty(neighbor);
+                                isShipNear(neighborCell);
                             } catch (AdjacentTilesException e) {
                                 return false;
                             }
@@ -218,7 +218,7 @@ public class Board extends Parent {
         } else {
             for (int i = x; i < x + length; i++) {
                 try {
-                    isValidPoint(i, y);
+                    isCellValid(i, y);
 
                     Cell cell = getCell(i, y);
                     try {
@@ -227,11 +227,11 @@ public class Board extends Parent {
                         return false;
                     }
 
-                    for (Cell neighbor : getNeighbors(i, y)) {
+                    for (Cell neighborCell : getNeighborCells(i, y)) {
                         try {
-                            isValidPoint(i, y);
+                            isCellValid(i, y);
                             try {
-                                isNeighborEmpty(neighbor);
+                                isShipNear(neighborCell);
                             } catch (AdjacentTilesException e) {
                                 return false;
                             }
@@ -257,8 +257,8 @@ public class Board extends Parent {
      * @return returns the boolean on whether the point is ok
      * @throws OversizeException throws the OversizeException if it is not ok
      */
-    private boolean isValidPoint(Point2D point) throws OversizeException{
-        return isValidPoint(point.getX(), point.getY());
+    private boolean validPoint (Point2D point) throws OversizeException{
+        return isCellValid(point.getX(), point.getY());
     }
 
     /**
@@ -269,11 +269,28 @@ public class Board extends Parent {
      * @return returns the boolean on whether the choise is within the Board borders
      * @throws OversizeException throws the OversizeException if it is not ok
      */
-    private boolean isValidPoint(double x, double y) throws OversizeException {
+    private boolean isCellValid(double x, double y) throws OversizeException {
         if (x >= 0 && x < 10 && y >= 0 && y < 10){
             return true;
         }else{
             throw new OversizeException("Can't place ship. Out of bounds placement.");
+        }
+    }
+
+    /**
+     * In order to check for adjacent tiles, the neighbors of a cell are checked. If they contain
+     * a ship the AdjacentTiles Exception will be thrown
+     *
+     * @param cell cell The cell to be checked if it is a valid choice
+     * @return returns the boolean on whether the neighboring cells are empty
+     * @throws AdjacentTilesException Exception thrown when there are neighboring cells with ships
+     */
+    private boolean isShipNear(Cell cell) throws AdjacentTilesException {
+        if (cell.ship == null){
+            return true;
+        }
+        else{
+            throw  new AdjacentTilesException("Too close to ship. Choose a different tile.");
         }
     }
 
@@ -289,23 +306,6 @@ public class Board extends Parent {
             return true;
         }else{
             throw new OverlapTilesException("There is a ship already in this position.");
-        }
-    }
-
-    /**
-     * In order to check for adjacent tiles, the neighbors of a cell are checked. If they contain
-     * a ship the AdjacentTiles Exception will be thrown
-     *
-     * @param cell cell The cell to be checked if it is a valid choice
-     * @return returns the boolean on whether the neighboring cells are empty
-     * @throws AdjacentTilesException Exception thrown when there are neighboring cells with ships
-     */
-    private boolean isNeighborEmpty(Cell cell) throws AdjacentTilesException {
-        if (cell.ship == null){
-            return true;
-        }
-        else{
-            throw  new AdjacentTilesException("Too close to ship. Choose a different tile.");
         }
     }
 

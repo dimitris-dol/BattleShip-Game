@@ -11,7 +11,7 @@ import javafx.scene.Parent;
  * @since 2020-1-8
  */
 public class Ship extends Parent {
-    public int type;
+    public int length;
     public boolean vertical;
     public int hitScore;
     public int SinkBonus;
@@ -24,16 +24,16 @@ public class Ship extends Parent {
      * This method defines the model of the ship. Specifically the ship length, health, type,
      * points for hitting and points for hitting are all described to be used in the game.
      *
-     * @param type the length of the ship which also describes its health
+     * @param length the length of the ship which also describes its health
      * @param vertical a boolean that shows whether the ships is placed vertically or horizontally
      * @param hitScore the amount of points the user earns if he hits the ship
      * @param SinkBonus the amount of points the user earns if he sinks the ship
      * @param shipType the type(name) of the ship
      */
-    public Ship(int type, boolean vertical, int hitScore, int SinkBonus, String shipType) {
-        this.type = type;
+    public Ship(int length, boolean vertical, int hitScore, int SinkBonus, String shipType) {
+        this.length = length;
         this.vertical = vertical;
-        health = type;
+        health = length;
         this.hitScore = hitScore;
         this.SinkBonus = SinkBonus;
         this.shipType = shipType;
@@ -62,6 +62,6 @@ public class Ship extends Parent {
      * @return returns the boolean on whether a ship is indeed hit or not
      */
     public boolean isHit(){
-        return !(health == type);
+        return !(health == length);
     }
 }
