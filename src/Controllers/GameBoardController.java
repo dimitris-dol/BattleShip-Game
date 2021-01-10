@@ -5,6 +5,7 @@ import GameFiles.Board;
 import GameFiles.Cell;
 import Main.Main;
 import Models.*;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -461,9 +462,16 @@ public class GameBoardController {
                     e.printStackTrace();
                 }
             }
+            if (shipsPlaced>5){
+                try {
+                    throw new InvalidCountException("Error with number of ships");
+                } catch (InvalidCountException e) {
+                    e.printStackTrace();
+                }
+            }
         });
 
-        // MAIN BOARD //
+        // POPULATE MAIN BOARD //
 
         Text txtME = new Text();
         Text txtENEMY = new Text();
@@ -535,7 +543,6 @@ public class GameBoardController {
                 shot.remove(0);
             }
             shot.add(cell);
-           // System.out.println(cellNears.size());
 
             enemyTurn = false;
 
@@ -562,7 +569,6 @@ public class GameBoardController {
             int length = shot.get(0).ship.health;
             int tmpx = shot.get(0).x;
             int tmpy = shot.get(0).y;
-         //   System.out.println("bad "+tmpx+" "+tmpy);
             boolean Flagf = true;
             while(length > 0){
                 if(tmpy+1<=9){
@@ -645,7 +651,6 @@ public class GameBoardController {
             x = NextFirst.get(0).x;
             y = NextFirst.get(0).y;
             NextFirst.remove(0);
-        //    System.out.println("good + "+x+" "+y);
         }
         else if (NExt){
             if(shot.get(0).ship==null && NextFirst.isEmpty()){
@@ -726,7 +731,6 @@ public class GameBoardController {
                 }
             }
         }
-   //     System.out.println(x+" "+y);
         return new int[] {x,y};
     }
 
@@ -750,7 +754,7 @@ public class GameBoardController {
      * will be called
      */
     private void startGame(TextField shipText, TextField scoreText, TextField shotsText, TextField percText) throws InvalidCountException {
-        // place enemy ships
+
         int count = 0;
 
         while (count <= 4) {
@@ -760,6 +764,9 @@ public class GameBoardController {
             if (enemyBoard.placeShip(new Ship(length[count], Math.random() < 0.5, hitScores[count], sinkScores[count], names[count]), x, y)) {
                 count++;
             }
+        }
+        if(count>5){
+            throw new InvalidCountException("Error with number of ships");
         }
 
         if (enemyTurn()) {
@@ -789,7 +796,9 @@ public class GameBoardController {
      * @param submarine text to update the player's submarine amount
      * @param destroyer text to update the player's destroyer amount
      */
-    private void scenarioLoadPlayer(TextField shipText, TextField scoreText, TextField shotsText, TextField percText, TextField carrier, TextField battleship, TextField cruiser, TextField submarine, TextField destroyer) {
+    private void scenarioLoadPlayer(TextField shipText, TextField scoreText, TextField shotsText, TextField percText, TextField carrier, TextField battleship, TextField cruiser, TextField submarine, TextField destroyer) throws InvalidCountException {
+        int count = 0;
+
         if (scenarioID == null) {
             System.out.println("Error. File not found");
             Alert alert = new Alert(Alert.AlertType.WARNING, "Error. Scenario not found!");
@@ -799,7 +808,6 @@ public class GameBoardController {
             infoBox("You have already placed ships! You can't load another game! Restart first if you want to load a scenario.", "Invalid Load");
         } else {
             try {
-                int count = 0;
                 scenario = new File("C:\\Users\\jimmd\\IdeaProjects\\BattleShip Game\\src\\MediaLab\\player_" + scenarioID + ".txt");
                 Scanner myReader = new Scanner(scenario);
                 while (myReader.hasNext()) {
@@ -813,28 +821,38 @@ public class GameBoardController {
                     Cell cell = playerBoard.getCell(coordinateX, coordinateY);
                     if (playerBoard.placeShip(new Ship(length[type], verticalCheck, hitScores[type], sinkScores[type], names[type]), cell.x, cell.y)) {
                         count++;
-                        carrier.setText("0");
-                        battleship.setText("0");
-                        cruiser.setText("0");
-                        submarine.setText("0");
-                        destroyer.setText("0");
-                        if (count > 4) {
-                            enemyScenarioLoad(shipText, scoreText, shotsText, percText);
-                        }
-                    } else {
+                    }
+                    else {
                         System.out.println("Error with ship" + names[type]);
                         Alert alert = new Alert(Alert.AlertType.WARNING, "Error with friendly ship: " + names[type] + ". Please load a working scenario!");
                         alert.showAndWait();
                         running=false;
                     }
+                        if(count>5){
+                            Alert alert = new Alert(Alert.AlertType.WARNING, "Error with amount of ships");
+                            alert.showAndWait();
+                            running = false;
+                            throw new InvalidCountException("Error with number of ships");
+                        }
+
+
                 }
-            } catch (FileNotFoundException | InvalidCountException e) {
+            } catch (FileNotFoundException e) {
                 System.out.print("File not found");
                 Alert alert = new Alert(Alert.AlertType.WARNING, "Error. Scenario not found!");
                 alert.showAndWait();
+                running = false;
             } catch (Exception ee) {
                 ee.printStackTrace();
             }
+        }
+        if (count == 5) {
+            carrier.setText("0");
+            battleship.setText("0");
+            cruiser.setText("0");
+            submarine.setText("0");
+            destroyer.setText("0");
+            enemyScenarioLoad(shipText, scoreText, shotsText, percText);
         }
     }
 
@@ -852,8 +870,9 @@ public class GameBoardController {
      * @throws InvalidCountException Exception thrown in case of a wrong amount of ships placed by the enemy
      */
     private void enemyScenarioLoad(TextField shipText, TextField scoreText, TextField shotsText, TextField percText) throws InvalidCountException {
-        // place enemy ships
 
+        int count=0;
+        boolean flagCount=true;
 
         if (scenarioID == null) {
             System.out.println("Error");
@@ -872,12 +891,24 @@ public class GameBoardController {
                     boolean verticalCheck = (vertical == 2);
                     System.out.println(type + " " + coordinateX + " " + coordinateY + " " + vertical);
                     Cell cell = enemyBoard.getCell(coordinateX, coordinateY);
-                    if (!enemyBoard.placeShip(new Ship(length[type], verticalCheck, hitScores[type], sinkScores[type], names[type]), cell.x, cell.y)) {
+                    if (enemyBoard.placeShip(new Ship(length[type], verticalCheck, hitScores[type], sinkScores[type], names[type]), cell.x, cell.y)) {
+                        count++;
+                        System.out.println(count);
+                    } else {
                         System.out.println("Error with ship" + names[type]);
                         Alert alert = new Alert(Alert.AlertType.WARNING, "Error with enemy ship: " + names[type] + ". Please load a working scenario!");
                         alert.showAndWait();
-                        running=false;
+                        running = false;
+                        flagCount=false;
                     }
+                    if(count>5){
+                        flagCount=false;
+                        Alert alert = new Alert(Alert.AlertType.WARNING, "Error with amount of ships");
+                        alert.showAndWait();
+                        running = false;
+                        throw new InvalidCountException("Error with number of ships");
+                    }
+
                 }
             } catch (FileNotFoundException e) {
                 System.out.print("File not found");
@@ -888,14 +919,15 @@ public class GameBoardController {
             }
         }
 
-        if (enemyTurn()) {
+        if (enemyTurn() && count==5 && flagCount) {
             infoBox("You go second!", "Unlucky, sir!");
             enemyMove(shipText, scoreText, shotsText, percText);
-        } else {
+            running = true;
+        } else if(count==5 && flagCount){
             infoBox("You go first!", "We got the upper hand!");
+            running = true;
         }
 
-        running = true;
     }
 
     // CHECK WHO WON //
